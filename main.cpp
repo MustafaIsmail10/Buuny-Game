@@ -433,6 +433,7 @@ void init()
 {
 	ParseObj("bunny.obj");
 	// ParseObj("bunny.obj");
+	ParseObj("quad.obj");
 
 	glEnable(GL_DEPTH_TEST);
 	initShaders();
@@ -461,12 +462,36 @@ void display()
 
 	float angleRad = (float)(angle / 180.0) * M_PI;
 
+	// Handle bunny hopping
+	static float y_value = 0;
+	static bool isGoingUp = true;
+
 	// Compute the modeling matrix
-	glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -3.f));
-	glm::mat4 matS = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
-	glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0), (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
-	glm::mat4 matRz = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
-	modelingMatrix = matT * matRz * matR; // starting from right side, rotate around Y to turn back, then rotate around Z some more at each frame, then translate.
+	// glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -10.f));
+	// glm::mat4 matS = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
+	// glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0), (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
+	// glm::mat4 matRz = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
+	// modelingMatrix = matT * matRz * matR; // starting from right side, rotate around Y to turn back, then rotate around Z some more at each frame, then translate.
+	
+	// Model matrix to make the bunny jump up and down
+	glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -8.f, -10.f));
+	// Rotate the bunny aroudd the Y axis 90 degrees
+	glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0),  - M_PI / 2., glm::vec3(0.0, 1.0, 0.0));
+	// Translate the bunny up and down
+	glm::mat4 matTy = glm::translate(glm::mat4(1.0), glm::vec3(0.f, y_value, 0.f));
+	if (isGoingUp) {
+		if (y_value >= 1) {
+			isGoingUp = false;
+		}
+		y_value += 0.05;
+	} else {
+		if (y_value <= -1) {
+			isGoingUp = true;
+		}
+		y_value -= 0.05;
+	}
+
+	modelingMatrix = matT * matR * matTy;
 
 	// or... (care for the order! first the very bottom one is applied)
 	// modelingMatrix = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -3.f));
