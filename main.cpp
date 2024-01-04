@@ -431,7 +431,7 @@ void initVBO()
 
 void init()
 {
-	ParseObj("armadillo.obj");
+	ParseObj("bunny.obj");
 	// ParseObj("bunny.obj");
 
 	glEnable(GL_DEPTH_TEST);
@@ -552,22 +552,20 @@ void mainLoop(GLFWwindow *window)
 
 int main(int argc, char **argv) // Create Main Function For Bringing It All Together
 {
+
+	// ############################ Some Necessary Initializations Start ############################
 	GLFWwindow *window;
 	if (!glfwInit())
 	{
 		exit(-1);
 	}
 
-	// glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-	// glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	// glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
-	// glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this if on MacOS
 
 	int width = 1000, height = 800;
-	window = glfwCreateWindow(width, height, "Simple Example", NULL, NULL);
+	window = glfwCreateWindow(width, height, "Bunny Run", NULL, NULL);
 
 	if (!window)
 	{
@@ -590,6 +588,7 @@ int main(int argc, char **argv) // Create Main Function For Bringing It All Toge
 	strcat(rendererInfo, " - ");								  // Use strcpy_s on Windows, strcpy on Linux
 	strcat(rendererInfo, (const char *)glGetString(GL_VERSION));  // Use strcpy_s on Windows, strcpy on Linux
 	glfwSetWindowTitle(window, rendererInfo);
+	// ############################ Some Necessary Initializations End ############################
 
 	init();
 
