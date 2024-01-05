@@ -2,7 +2,7 @@
 
 out vec4 fragColor;
 
-in vec3 vertexPos;
+in vec4 vertexPos;
 
 
 void main(void)

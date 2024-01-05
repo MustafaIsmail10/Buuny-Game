@@ -23,7 +23,7 @@ layout(location=1) in vec3 inNormal;
 
 out vec4 color;
 
-out vec3 vertexPos;
+out vec4 vertexPos;
 
 
 void main(void)
@@ -65,6 +65,6 @@ void main(void)
 
     gl_Position = projectionMatrix * viewingMatrix * modelingMatrix * vec4(inVertex, 1);
 
-	vertexPos = vec3(pWorld);
+	vertexPos = gl_Position;
 }
 
