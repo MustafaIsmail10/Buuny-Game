@@ -83,6 +83,11 @@ vector<Face> gFacesQuad;
 vector<Vertex> gVerticesQuad;
 vector<Normal> gNormalsQuad;
 
+vector<Texture> gTexturesCube;
+vector<Face> gFacesCube;
+vector<Vertex> gVerticesCube;
+vector<Normal> gNormalsCube;
+
 GLuint gVertexAttribBuffer, gIndexBuffer;
 GLint gInVertexLoc, gInNormalLoc;
 int gVertexDataSizeInBytes, gNormalDataSizeInBytes;
@@ -365,7 +370,7 @@ void initShaders()
 
 // ############################# Reading shader files and creating shader objects End #############################
 
-void initVBO(vector<Vertex> &gVertices, vector<Normal> &gNormals, vector<Face> &gFaces)
+void initVBO()
 {
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
@@ -456,8 +461,8 @@ void init()
 
 	initShaders();
 
-	initVBO(gVerticesBunny, gNormalsBunny, gFacesBunny);
-	initVBO(gVerticesQuad, gNormalsQuad, gFacesQuad);
+	initVBO();
+	// initVBO(gVerticesQuad, gNormalsQuad, gFacesQuad);
 }
 
 void drawModel(vector<Face> &gFaces)
@@ -535,11 +540,11 @@ void display()
 
 	angle += 0.9;
 
-	// glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -10.f));
-	// glm::mat4 matS = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
-	// glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0), (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
-	// glm::mat4 matRz = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
-	// modelingMatrix = matT * matRz * matR; // starting from right side, rotate around Y to turn back, then rotate around Z some more at each frame, then translate.
+	glm::mat4 matT2 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -10.f));
+	glm::mat4 matS2 = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
+	glm::mat4 matR2 = glm::rotate<float>(glm::mat4(1.0), (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
+	glm::mat4 matRz2 = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
+	modelingMatrix = matT2 * matRz2 * matR2; // starting from right side, rotate around Y to turn back, then rotate around Z some more at each frame, then translate.
 
 	glUseProgram(gProgram[1]);
 	glUniformMatrix4fv(projectionMatrixLoc[1], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
