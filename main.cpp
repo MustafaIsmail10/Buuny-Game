@@ -359,19 +359,25 @@ void initShaders()
 
 	// Create the shaders for both programs
 
-	GLuint vs1 = createVS("vert.glsl");
-	GLuint fs1 = createFS("frag.glsl");
+	GLuint vs0 = createVS("vert0.glsl");
+	GLuint fs0 = createFS("frag0.glsl");
+
+	GLuint vs1 = createVS("vert1.glsl");
+	GLuint fs1 = createFS("frag1.glsl");
 
 	GLuint vs2 = createVS("vert2.glsl");
 	GLuint fs2 = createFS("frag2.glsl");
 
 	// Attach the shaders to the programs
 
-	glAttachShader(gProgram[0], vs1);
-	glAttachShader(gProgram[0], fs1);
+	glAttachShader(gProgram[0], vs0);
+	glAttachShader(gProgram[0], fs0);
 
-	glAttachShader(gProgram[1], vs2);
-	glAttachShader(gProgram[1], fs2);
+	glAttachShader(gProgram[1], vs1);
+	glAttachShader(gProgram[1], fs1);
+
+	glAttachShader(gProgram[2], vs2);
+	glAttachShader(gProgram[2], fs2);
 
 	// Link the programs
 
@@ -394,14 +400,28 @@ void initShaders()
 		exit(-1);
 	}
 
+	glLinkProgram(gProgram[2]);
+	glGetProgramiv(gProgram[2], GL_LINK_STATUS, &status);
+
+	if (status != GL_TRUE)
+	{
+		cout << "Program link failed" << endl;
+		exit(-1);
+	}
+
 	// Get the locations of the uniform variables from both programs
 
-	for (int i = 0; i < 2; ++i)
-	{
-		modelingMatrixLocBunny = glGetUniformLocation(gProgram[i], "modelingMatrix");
-		viewingMatrixLocBunny = glGetUniformLocation(gProgram[i], "viewingMatrix");
-		projectionMatrixLocBunny = glGetUniformLocation(gProgram[i], "projectionMatrix");
-	}
+	modelingMatrixLocBunny = glGetUniformLocation(gProgram[bunnyProgram], "modelingMatrix");
+	viewingMatrixLocBunny = glGetUniformLocation(gProgram[bunnyProgram], "viewingMatrix");
+	projectionMatrixLocBunny = glGetUniformLocation(gProgram[bunnyProgram], "projectionMatrix");
+
+	modelingMatrixLocQuad = glGetUniformLocation(gProgram[quadProgram], "modelingMatrix");
+	viewingMatrixLocQuad = glGetUniformLocation(gProgram[quadProgram], "viewingMatrix");
+	projectionMatrixLocQuad = glGetUniformLocation(gProgram[quadProgram], "projectionMatrix");
+
+	modelingMatrixLocCube = glGetUniformLocation(gProgram[cubeProgram], "modelingMatrix");
+	viewingMatrixLocCube = glGetUniformLocation(gProgram[cubeProgram], "viewingMatrix");
+	projectionMatrixLocCube = glGetUniformLocation(gProgram[cubeProgram], "projectionMatrix");
 }
 
 // ############################# Reading shader files and creating shader objects End #############################
