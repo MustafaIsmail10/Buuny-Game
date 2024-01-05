@@ -355,6 +355,7 @@ void initShaders()
 
 	gProgram[0] = glCreateProgram();
 	gProgram[1] = glCreateProgram();
+	gProgram[2] = glCreateProgram();
 
 	// Create the shaders for both programs
 
