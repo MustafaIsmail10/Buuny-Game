@@ -36,6 +36,8 @@ glm::mat4 modelingMatrixBunny;
 GLint modelingMatrixLocQuad;
 GLint viewingMatrixLocQuad;
 GLint projectionMatrixLocQuad;
+GLint offsetLoc;
+GLfloat offset = 0;
 
 glm::mat4 projectionMatrixQuad;
 glm::mat4 viewingMatrixQuad;
@@ -418,6 +420,7 @@ void initShaders()
 	modelingMatrixLocQuad = glGetUniformLocation(gProgram[quadProgram], "modelingMatrix");
 	viewingMatrixLocQuad = glGetUniformLocation(gProgram[quadProgram], "viewingMatrix");
 	projectionMatrixLocQuad = glGetUniformLocation(gProgram[quadProgram], "projectionMatrix");
+	offsetLoc = glGetUniformLocation(gProgram[quadProgram], "offset");
 
 	modelingMatrixLocCube = glGetUniformLocation(gProgram[cubeProgram], "modelingMatrix");
 	viewingMatrixLocCube = glGetUniformLocation(gProgram[cubeProgram], "viewingMatrix");
@@ -718,13 +721,11 @@ void display()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesQuad.size() * 3 * sizeof(GLfloat)));
 
 	// angle
+	offset += 0.1;
 
 	glm::mat4 matRQuad = glm::rotate<float>(glm::mat4(1.0), 85, glm::vec3(1.0, 0.0, 0.0));
-	glm::mat4 matS2 = glm::scale(glm::mat4(1.0), glm::vec3(2, 1, 100));
+	glm::mat4 matS2 = glm::scale(glm::mat4(1.0), glm::vec3(2, 1, 200));
 	glm::mat4 matT2 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -1.0f, -1.0f));
-
-	glm::mat4 matR2 = glm::rotate<float>(glm::mat4(1.0), (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
-	// glm::mat4 matRz = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
 
 	modelingMatrixQuad = matT2 * matS2 * matRQuad;
 
@@ -732,6 +733,9 @@ void display()
 	glUniformMatrix4fv(projectionMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(projectionMatrixQuad));
 	glUniformMatrix4fv(viewingMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(viewingMatrixQuad));
 	glUniformMatrix4fv(modelingMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(modelingMatrixQuad));
+
+	printf("offset = %f\n", offset);
+	glUniform1f(offsetLoc, offset);
 
 	drawModel(gFacesQuad);
 

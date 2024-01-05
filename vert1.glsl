@@ -17,17 +17,16 @@ uniform mat4 modelingMatrix;
 uniform mat4 viewingMatrix;
 uniform mat4 projectionMatrix;
 uniform vec3 eyePos;
+uniform uint offset;
 
-layout(location=0) in vec3 inVertex;
-layout(location=1) in vec3 inNormal;
+layout(location = 0) in vec3 inVertex;
+layout(location = 1) in vec3 inNormal;
 
 out vec4 color;
 
-out vec4 vertexPos;
+out vec4 pos;
 
-
-void main(void)
-{
+void main(void) {
 	// First, convert to world coordinates. This is where
 	// lighting computations must be performed. inVertex
 	// is NOT in homogeneous coordinates. inNormal has three
@@ -63,8 +62,7 @@ void main(void)
 	// Transform the vertex with the product of the projection, viewing, and
 	// modeling matrices.
 
-    gl_Position = projectionMatrix * viewingMatrix * modelingMatrix * vec4(inVertex, 1);
+	gl_Position = projectionMatrix * viewingMatrix * modelingMatrix * vec4(inVertex, 1);
 
-	vertexPos = gl_Position;
+	pos = gl_Position;
 }
-
