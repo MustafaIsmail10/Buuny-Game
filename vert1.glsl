@@ -23,6 +23,9 @@ layout(location=1) in vec3 inNormal;
 
 out vec4 color;
 
+out vec3 vertexPos;
+
+
 void main(void)
 {
 	// First, convert to world coordinates. This is where
@@ -61,5 +64,7 @@ void main(void)
 	// modeling matrices.
 
     gl_Position = projectionMatrix * viewingMatrix * modelingMatrix * vec4(inVertex, 1);
+
+	vertexPos = vec3(pWorld);
 }
 
