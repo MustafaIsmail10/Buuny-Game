@@ -72,7 +72,7 @@ struct Face
 vector<Vertex> gVertices;
 vector<Texture> gTextures;
 vector<Normal> gNormals;
-vector<Face> gFaces;
+vector<Face> gFacesBunny;
 
 GLuint gVertexAttribBuffer, gIndexBuffer;
 GLint gInVertexLoc, gInNormalLoc;
@@ -150,7 +150,7 @@ bool ParseObj(const string &fileName)
                         tIndex[c] -= 1;
                     }
 
-                    gFaces.push_back(Face(vIndex, tIndex, nIndex));
+                    gFacesBunny.push_back(Face(vIndex, tIndex, nIndex));
                 }
                 else
                 {
@@ -378,11 +378,11 @@ void initVBO()
 
     gVertexDataSizeInBytes = gVertices.size() * 3 * sizeof(GLfloat);
     gNormalDataSizeInBytes = gNormals.size() * 3 * sizeof(GLfloat);
-    int indexDataSizeInBytes = gFaces.size() * 3 * sizeof(GLuint);
+    int indexDataSizeInBytes = gFacesBunny.size() * 3 * sizeof(GLuint);
 
     GLfloat *vertexData = new GLfloat[gVertices.size() * 3];
     GLfloat *normalData = new GLfloat[gNormals.size() * 3];
-    GLuint *indexData = new GLuint[gFaces.size() * 3];
+    GLuint *indexData = new GLuint[gFacesBunny.size() * 3];
 
     float minX = 1e6, maxX = -1e6;
     float minY = 1e6, maxY = -1e6;
@@ -416,11 +416,11 @@ void initVBO()
         normalData[3 * i + 2] = gNormals[i].z;
     }
 
-    for (int i = 0; i < gFaces.size(); ++i)
+    for (int i = 0; i < gFacesBunny.size(); ++i)
     {
-        indexData[3 * i] = gFaces[i].vIndex[0];
-        indexData[3 * i + 1] = gFaces[i].vIndex[1];
-        indexData[3 * i + 2] = gFaces[i].vIndex[2];
+        indexData[3 * i] = gFacesBunny[i].vIndex[0];
+        indexData[3 * i + 1] = gFacesBunny[i].vIndex[1];
+        indexData[3 * i + 2] = gFacesBunny[i].vIndex[2];
     }
 
     glBufferData(GL_ARRAY_BUFFER, gVertexDataSizeInBytes + gNormalDataSizeInBytes, 0, GL_STATIC_DRAW);
@@ -458,7 +458,7 @@ void drawModel()
     // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     // glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVertexDataSizeInBytes));
 
-    glDrawElements(GL_TRIANGLES, gFaces.size() * 3, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, gFacesBunny.size() * 3, GL_UNSIGNED_INT, 0);
 }
 
 void display()

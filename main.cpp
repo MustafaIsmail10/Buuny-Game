@@ -69,10 +69,19 @@ struct Face
 	GLuint vIndex[3], tIndex[3], nIndex[3];
 };
 
-vector<Vertex> gVertices;
-vector<Texture> gTextures;
-vector<Normal> gNormals;
-vector<Face> gFaces;
+// vector<Vertex> gVertices;
+// vector<Texture> gTextures;
+// vector<Normal> gNormals;
+
+vector<Texture> gTexturesBunny;
+vector<Face> gFacesBunny;
+vector<Vertex> gVerticesBunny;
+vector<Normal> gNormalsBunny;
+
+vector<Texture> gTexturesQuad;
+vector<Face> gFacesQuad;
+vector<Vertex> gVerticesQuad;
+vector<Normal> gNormalsQuad;
 
 GLuint gVertexAttribBuffer, gIndexBuffer;
 GLint gInVertexLoc, gInNormalLoc;
@@ -82,7 +91,7 @@ int gVertexDataSizeInBytes, gNormalDataSizeInBytes;
 This function parses the obj file and stores the vertices, normals, and faces in the global variables (gVertices, gNormals, and gFaces).
 Those global variables are then used to create the vertex buffer object (VBO) and the index buffer object (IBO) in initVBO().
 */
-bool ParseObj(const string &fileName)
+bool ParseObj(const string &fileName, vector<Texture> &gTextures, vector<Vertex> &gVertices, vector<Normal> &gNormals, vector<Face> &gFaces)
 {
 	fstream myfile;
 
@@ -356,7 +365,7 @@ void initShaders()
 
 // ############################# Reading shader files and creating shader objects End #############################
 
-void initVBO()
+void initVBO(vector<Vertex> &gVertices, vector<Normal> &gNormals, vector<Face> &gFaces)
 {
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
@@ -440,17 +449,18 @@ void initVBO()
 void init()
 {
 	// Parsing objects from obj files
-	ParseObj("bunny.obj");
-	// ParseObj("quad.obj");
+	ParseObj("bunny.obj", gTexturesBunny, gVerticesBunny, gNormalsBunny, gFacesBunny);
+	ParseObj("quad.obj", gTexturesBunny, gVerticesQuad, gNormalsQuad, gFacesQuad);
 
 	glEnable(GL_DEPTH_TEST); // enable depth-testing
 
 	initShaders();
 
-	initVBO();
+	initVBO(gVerticesBunny, gNormalsBunny, gFacesBunny);
+	initVBO(gVerticesQuad, gNormalsQuad, gFacesQuad);
 }
 
-void drawModel()
+void drawModel(vector<Face> &gFaces)
 {
 	// glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBuffer);
 	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBuffer);
@@ -514,16 +524,31 @@ void display()
 	// modelingMatrix = glm::rotate<float>(modelingMatrix, (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
 
 	// Set the active program and the values of its uniform variables
-	glUseProgram(gProgram[activeProgramIndex]);
-	glUniformMatrix4fv(projectionMatrixLoc[activeProgramIndex], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniformMatrix4fv(viewingMatrixLoc[activeProgramIndex], 1, GL_FALSE, glm::value_ptr(viewingMatrix));
-	glUniformMatrix4fv(modelingMatrixLoc[activeProgramIndex], 1, GL_FALSE, glm::value_ptr(modelingMatrix));
-	glUniform3fv(eyePosLoc[activeProgramIndex], 1, glm::value_ptr(eyePos));
+	glUseProgram(gProgram[0]);
+	glUniformMatrix4fv(projectionMatrixLoc[0], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+	glUniformMatrix4fv(viewingMatrixLoc[0], 1, GL_FALSE, glm::value_ptr(viewingMatrix));
+	glUniformMatrix4fv(modelingMatrixLoc[0], 1, GL_FALSE, glm::value_ptr(modelingMatrix));
+	glUniform3fv(eyePosLoc[0], 1, glm::value_ptr(eyePos));
 
 	// Draw the scene
-	drawModel();
+	drawModel(gFacesBunny);
 
 	angle += 0.9;
+
+	// glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -10.f));
+	// glm::mat4 matS = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
+	// glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0), (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
+	// glm::mat4 matRz = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
+	// modelingMatrix = matT * matRz * matR; // starting from right side, rotate around Y to turn back, then rotate around Z some more at each frame, then translate.
+
+	glUseProgram(gProgram[1]);
+	glUniformMatrix4fv(projectionMatrixLoc[1], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+	glUniformMatrix4fv(viewingMatrixLoc[1], 1, GL_FALSE, glm::value_ptr(viewingMatrix));
+	glUniformMatrix4fv(modelingMatrixLoc[1], 1, GL_FALSE, glm::value_ptr(modelingMatrix));
+	// glUniform3fv(eyePosLoc[1], 1, glm::value_ptr(eyePos));
+
+	// Draw the scene
+	drawModel(gFacesQuad);
 }
 
 void reshape(GLFWwindow *window, int w, int h)
