@@ -22,9 +22,9 @@ using namespace std;
 GLuint gProgram[2];
 int gWidth, gHeight;
 
-GLint modelingMatrixLoc[2];
-GLint viewingMatrixLoc[2];
-GLint projectionMatrixLoc[2];
+GLint modelingMatrixLocBunny[2];
+GLint viewingMatrixLocBunny[2];
+GLint projectionMatrixLocBunny[2];
 GLint eyePosLoc[2];
 
 glm::mat4 projectionMatrix;
@@ -74,7 +74,7 @@ vector<Texture> gTextures;
 vector<Normal> gNormals;
 vector<Face> gFacesBunny;
 
-GLuint gVertexAttribBuffer, gIndexBuffer;
+GLuint gVertexAttribBufferBunny, gIndexBufferBunny;
 GLint gInVertexLoc, gInNormalLoc;
 int gVertexDataSizeInBytes, gNormalDataSizeInBytes;
 
@@ -347,9 +347,9 @@ void initShaders()
 
     for (int i = 0; i < 2; ++i)
     {
-        modelingMatrixLoc[i] = glGetUniformLocation(gProgram[i], "modelingMatrix");
-        viewingMatrixLoc[i] = glGetUniformLocation(gProgram[i], "viewingMatrix");
-        projectionMatrixLoc[i] = glGetUniformLocation(gProgram[i], "projectionMatrix");
+        modelingMatrixLocBunny[i] = glGetUniformLocation(gProgram[i], "modelingMatrix");
+        viewingMatrixLocBunny[i] = glGetUniformLocation(gProgram[i], "viewingMatrix");
+        projectionMatrixLocBunny[i] = glGetUniformLocation(gProgram[i], "projectionMatrix");
         eyePosLoc[i] = glGetUniformLocation(gProgram[i], "eyePos");
     }
 }
@@ -368,13 +368,13 @@ void initVBO()
     glEnableVertexAttribArray(1);
     assert(glGetError() == GL_NONE);
 
-    glGenBuffers(1, &gVertexAttribBuffer);
-    glGenBuffers(1, &gIndexBuffer);
+    glGenBuffers(1, &gVertexAttribBufferBunny);
+    glGenBuffers(1, &gIndexBufferBunny);
 
-    assert(gVertexAttribBuffer > 0 && gIndexBuffer > 0);
+    assert(gVertexAttribBufferBunny > 0 && gIndexBufferBunny > 0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferBunny);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferBunny);
 
     gVertexDataSizeInBytes = gVertices.size() * 3 * sizeof(GLfloat);
     gNormalDataSizeInBytes = gNormals.size() * 3 * sizeof(GLfloat);
@@ -515,9 +515,9 @@ void display()
 
     // Set the active program and the values of its uniform variables
     glUseProgram(gProgram[activeProgramIndex]);
-    glUniformMatrix4fv(projectionMatrixLoc[activeProgramIndex], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-    glUniformMatrix4fv(viewingMatrixLoc[activeProgramIndex], 1, GL_FALSE, glm::value_ptr(viewingMatrix));
-    glUniformMatrix4fv(modelingMatrixLoc[activeProgramIndex], 1, GL_FALSE, glm::value_ptr(modelingMatrix));
+    glUniformMatrix4fv(projectionMatrixLocBunny[activeProgramIndex], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    glUniformMatrix4fv(viewingMatrixLocBunny[activeProgramIndex], 1, GL_FALSE, glm::value_ptr(viewingMatrix));
+    glUniformMatrix4fv(modelingMatrixLocBunny[activeProgramIndex], 1, GL_FALSE, glm::value_ptr(modelingMatrix));
     glUniform3fv(eyePosLoc[activeProgramIndex], 1, glm::value_ptr(eyePos));
 
     // Draw the scene

@@ -19,21 +19,49 @@
 
 using namespace std;
 
-GLuint gProgram[2];
 int gWidth, gHeight;
 
-GLint modelingMatrixLoc[2];
-GLint viewingMatrixLoc[2];
-GLint projectionMatrixLoc[2];
-GLint eyePosLoc[2];
+// ############################# Bunny transformation Matricis Start #############################
+GLint modelingMatrixLocBunny;
+GLint viewingMatrixLocBunny;
+GLint projectionMatrixLocBunny;
 
-glm::mat4 projectionMatrix;
-glm::mat4 viewingMatrix;
-glm::mat4 modelingMatrix;
-glm::vec3 eyePos(0, 0, 0);
+glm::mat4 projectionMatrixBunny;
+glm::mat4 viewingMatrixBunny;
+glm::mat4 modelingMatrixBunny;
 
-int activeProgramIndex = 0;
+// ############################# Bunny transformation Matricis End #############################
 
+// ############################# Quad transformation Matricis Start #############################
+GLint modelingMatrixLocQuad;
+GLint viewingMatrixLocQuad;
+GLint projectionMatrixLocQuad;
+
+glm::mat4 projectionMatrixQuad;
+glm::mat4 viewingMatrixQuad;
+glm::mat4 modelingMatrixQuad;
+
+// ############################# Quad transformation Matricis End #############################
+
+// ############################# Cube transformation Matricis Start #############################
+GLint modelingMatrixLocCube;
+GLint viewingMatrixLocCube;
+GLint projectionMatrixLocCube;
+
+glm::mat4 projectionMatrixCube;
+glm::mat4 viewingMatrixCube;
+glm::mat4 modelingMatrixCube;
+
+// ############################# Cube transformation Matricis End #############################
+
+// ############################# Global variables for bunny, quad, and cube shading programs Start #############################
+const int bunnyProgram = 0;
+const int quadProgram = 1;
+const int cubeProgram = 2;
+GLuint gProgram[3];
+// ############################# Global variables for bunny, quad, and cube shading programs End #############################
+
+// ############################# Data structures for bunny, quad, and cube Start #############################
 struct Vertex
 {
 	Vertex(GLfloat inX, GLfloat inY, GLfloat inZ) : x(inX), y(inY), z(inZ) {}
@@ -69,10 +97,13 @@ struct Face
 	GLuint vIndex[3], tIndex[3], nIndex[3];
 };
 
+// ############################# Data structures for bunny, quad, and cube End #############################
+
 // vector<Vertex> gVertices;
 // vector<Texture> gTextures;
 // vector<Normal> gNormals;
 
+// ############################# Global variables for bunny, quad, and cube Start #############################
 vector<Texture> gTexturesBunny;
 vector<Face> gFacesBunny;
 vector<Vertex> gVerticesBunny;
@@ -88,9 +119,14 @@ vector<Face> gFacesCube;
 vector<Vertex> gVerticesCube;
 vector<Normal> gNormalsCube;
 
-GLuint gVertexAttribBuffer, gIndexBuffer;
+// ############################# Global variables for bunny, quad, and cube End #############################
+
+GLuint gVertexAttribBufferBunny, gIndexBufferBunny;
+GLuint gVertexAttribBufferQuad, gIndexBufferQuad;
+GLuint gVertexAttribBufferCube, gIndexBufferCube;
+
 GLint gInVertexLoc, gInNormalLoc;
-int gVertexDataSizeInBytes, gNormalDataSizeInBytes;
+uint gVertexDataSizeInBytes, gNormalDataSizeInBytes;
 
 /*
 This function parses the obj file and stores the vertices, normals, and faces in the global variables (gVertices, gNormals, and gFaces).
@@ -361,10 +397,9 @@ void initShaders()
 
 	for (int i = 0; i < 2; ++i)
 	{
-		modelingMatrixLoc[i] = glGetUniformLocation(gProgram[i], "modelingMatrix");
-		viewingMatrixLoc[i] = glGetUniformLocation(gProgram[i], "viewingMatrix");
-		projectionMatrixLoc[i] = glGetUniformLocation(gProgram[i], "projectionMatrix");
-		eyePosLoc[i] = glGetUniformLocation(gProgram[i], "eyePos");
+		modelingMatrixLocBunny = glGetUniformLocation(gProgram[i], "modelingMatrix");
+		viewingMatrixLocBunny = glGetUniformLocation(gProgram[i], "viewingMatrix");
+		projectionMatrixLocBunny = glGetUniformLocation(gProgram[i], "projectionMatrix");
 	}
 }
 
@@ -378,42 +413,40 @@ void initVBO()
 	glBindVertexArray(vao);
 	cout << "vao = " << vao << endl;
 
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
 	assert(glGetError() == GL_NONE);
 
-	glGenBuffers(1, &gVertexAttribBuffer);
-	glGenBuffers(1, &gIndexBuffer);
+	glGenBuffers(1, &gVertexAttribBufferBunny);
+	glGenBuffers(1, &gIndexBufferBunny);
 
-	assert(gVertexAttribBuffer > 0 && gIndexBuffer > 0);
+	assert(gVertexAttribBufferBunny > 0 && gIndexBufferBunny > 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferBunny);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferBunny);
 
-	gVertexDataSizeInBytes = gVertices.size() * 3 * sizeof(GLfloat);
-	gNormalDataSizeInBytes = gNormals.size() * 3 * sizeof(GLfloat);
-	int indexDataSizeInBytes = gFaces.size() * 3 * sizeof(GLuint);
+	gVertexDataSizeInBytes = gVerticesBunny.size() * 3 * sizeof(GLfloat);
+	gNormalDataSizeInBytes = gNormalsBunny.size() * 3 * sizeof(GLfloat);
+	int indexDataSizeInBytes = gFacesBunny.size() * 3 * sizeof(GLuint);
 
-	GLfloat *vertexData = new GLfloat[gVertices.size() * 3];
-	GLfloat *normalData = new GLfloat[gNormals.size() * 3];
-	GLuint *indexData = new GLuint[gFaces.size() * 3];
+	GLfloat *vertexData = new GLfloat[gVerticesBunny.size() * 3];
+	GLfloat *normalData = new GLfloat[gNormalsBunny.size() * 3];
+	GLuint *indexData = new GLuint[gFacesBunny.size() * 3];
 
 	float minX = 1e6, maxX = -1e6;
 	float minY = 1e6, maxY = -1e6;
 	float minZ = 1e6, maxZ = -1e6;
 
-	for (int i = 0; i < gVertices.size(); ++i)
+	for (int i = 0; i < gVerticesBunny.size(); ++i)
 	{
-		vertexData[3 * i] = gVertices[i].x;
-		vertexData[3 * i + 1] = gVertices[i].y;
-		vertexData[3 * i + 2] = gVertices[i].z;
+		vertexData[3 * i] = gVerticesBunny[i].x;
+		vertexData[3 * i + 1] = gVerticesBunny[i].y;
+		vertexData[3 * i + 2] = gVerticesBunny[i].z;
 
-		minX = std::min(minX, gVertices[i].x);
-		maxX = std::max(maxX, gVertices[i].x);
-		minY = std::min(minY, gVertices[i].y);
-		maxY = std::max(maxY, gVertices[i].y);
-		minZ = std::min(minZ, gVertices[i].z);
-		maxZ = std::max(maxZ, gVertices[i].z);
+		minX = std::min(minX, gVerticesBunny[i].x);
+		maxX = std::max(maxX, gVerticesBunny[i].x);
+		minY = std::min(minY, gVerticesBunny[i].y);
+		maxY = std::max(maxY, gVerticesBunny[i].y);
+		minZ = std::min(minZ, gVerticesBunny[i].z);
+		maxZ = std::max(maxZ, gVerticesBunny[i].z);
 	}
 
 	std::cout << "minX = " << minX << std::endl;
@@ -423,18 +456,18 @@ void initVBO()
 	std::cout << "minZ = " << minZ << std::endl;
 	std::cout << "maxZ = " << maxZ << std::endl;
 
-	for (int i = 0; i < gNormals.size(); ++i)
+	for (int i = 0; i < gNormalsBunny.size(); ++i)
 	{
-		normalData[3 * i] = gNormals[i].x;
-		normalData[3 * i + 1] = gNormals[i].y;
-		normalData[3 * i + 2] = gNormals[i].z;
+		normalData[3 * i] = gNormalsBunny[i].x;
+		normalData[3 * i + 1] = gNormalsBunny[i].y;
+		normalData[3 * i + 2] = gNormalsBunny[i].z;
 	}
 
-	for (int i = 0; i < gFaces.size(); ++i)
+	for (int i = 0; i < gFacesBunny.size(); ++i)
 	{
-		indexData[3 * i] = gFaces[i].vIndex[0];
-		indexData[3 * i + 1] = gFaces[i].vIndex[1];
-		indexData[3 * i + 2] = gFaces[i].vIndex[2];
+		indexData[3 * i] = gFacesBunny[i].vIndex[0];
+		indexData[3 * i + 1] = gFacesBunny[i].vIndex[1];
+		indexData[3 * i + 2] = gFacesBunny[i].vIndex[2];
 	}
 
 	glBufferData(GL_ARRAY_BUFFER, gVertexDataSizeInBytes + gNormalDataSizeInBytes, 0, GL_STATIC_DRAW);
@@ -447,8 +480,105 @@ void initVBO()
 	delete[] normalData;
 	delete[] indexData;
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVertexDataSizeInBytes));
+	// ############################# Quad VBO Start #############################
+	glGenBuffers(1, &gVertexAttribBufferQuad);
+	glGenBuffers(1, &gIndexBufferQuad);
+
+	assert(gVertexAttribBufferQuad > 0 && gIndexBufferQuad > 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferQuad);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferQuad);
+
+	gVertexDataSizeInBytes = gVerticesQuad.size() * 3 * sizeof(GLfloat);
+	gNormalDataSizeInBytes = gNormalsQuad.size() * 3 * sizeof(GLfloat);
+	indexDataSizeInBytes = gFacesQuad.size() * 3 * sizeof(GLuint);
+
+	vertexData = new GLfloat[gVerticesQuad.size() * 3];
+	normalData = new GLfloat[gNormalsQuad.size() * 3];
+	indexData = new GLuint[gFacesQuad.size() * 3];
+
+	for (int i = 0; i < gVerticesQuad.size(); ++i)
+	{
+		vertexData[3 * i] = gVerticesQuad[i].x;
+		vertexData[3 * i + 1] = gVerticesQuad[i].y;
+		vertexData[3 * i + 2] = gVerticesQuad[i].z;
+	}
+
+	for (int i = 0; i < gNormalsQuad.size(); ++i)
+	{
+		normalData[3 * i] = gNormalsQuad[i].x;
+		normalData[3 * i + 1] = gNormalsQuad[i].y;
+		normalData[3 * i + 2] = gNormalsQuad[i].z;
+	}
+
+	for (int i = 0; i < gFacesQuad.size(); ++i)
+	{
+		indexData[3 * i] = gFacesQuad[i].vIndex[0];
+		indexData[3 * i + 1] = gFacesQuad[i].vIndex[1];
+		indexData[3 * i + 2] = gFacesQuad[i].vIndex[2];
+	}
+
+	glBufferData(GL_ARRAY_BUFFER, gVertexDataSizeInBytes + gNormalDataSizeInBytes, 0, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, gVertexDataSizeInBytes, vertexData);
+	glBufferSubData(GL_ARRAY_BUFFER, gVertexDataSizeInBytes, gNormalDataSizeInBytes, normalData);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSizeInBytes, indexData, GL_STATIC_DRAW);
+
+	// done copying to GPU memory; can free now from CPU memory
+	delete[] vertexData;
+	delete[] normalData;
+	delete[] indexData;
+
+	// ############################# Quad VBO End #############################
+
+	// ############################# Cube VBO Start #############################
+	glGenBuffers(1, &gVertexAttribBufferCube);
+	glGenBuffers(1, &gIndexBufferCube);
+
+	assert(gVertexAttribBufferCube > 0 && gIndexBufferCube > 0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
+
+	gVertexDataSizeInBytes = gVerticesCube.size() * 3 * sizeof(GLfloat);
+	gNormalDataSizeInBytes = gNormalsCube.size() * 3 * sizeof(GLfloat);
+	indexDataSizeInBytes = gFacesCube.size() * 3 * sizeof(GLuint);
+
+	vertexData = new GLfloat[gVerticesCube.size() * 3];
+	normalData = new GLfloat[gNormalsCube.size() * 3];
+	indexData = new GLuint[gFacesCube.size() * 3];
+
+	for (int i = 0; i < gVerticesCube.size(); ++i)
+	{
+		vertexData[3 * i] = gVerticesCube[i].x;
+		vertexData[3 * i + 1] = gVerticesCube[i].y;
+		vertexData[3 * i + 2] = gVerticesCube[i].z;
+	}
+
+	for (int i = 0; i < gNormalsCube.size(); ++i)
+	{
+		normalData[3 * i] = gNormalsCube[i].x;
+		normalData[3 * i + 1] = gNormalsCube[i].y;
+		normalData[3 * i + 2] = gNormalsCube[i].z;
+	}
+
+	for (int i = 0; i < gFacesCube.size(); ++i)
+	{
+		indexData[3 * i] = gFacesCube[i].vIndex[0];
+		indexData[3 * i + 1] = gFacesCube[i].vIndex[1];
+		indexData[3 * i + 2] = gFacesCube[i].vIndex[2];
+	}
+
+	glBufferData(GL_ARRAY_BUFFER, gVertexDataSizeInBytes + gNormalDataSizeInBytes, 0, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, gVertexDataSizeInBytes, vertexData);
+	glBufferSubData(GL_ARRAY_BUFFER, gVertexDataSizeInBytes, gNormalDataSizeInBytes, normalData);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSizeInBytes, indexData, GL_STATIC_DRAW);
+
+	// done copying to GPU memory; can free now from CPU memory
+	delete[] vertexData;
+	delete[] normalData;
+	delete[] indexData;
+
+	// ############################# Cube VBO End #############################
 }
 
 void init()
@@ -456,13 +586,13 @@ void init()
 	// Parsing objects from obj files
 	ParseObj("bunny.obj", gTexturesBunny, gVerticesBunny, gNormalsBunny, gFacesBunny);
 	ParseObj("quad.obj", gTexturesBunny, gVerticesQuad, gNormalsQuad, gFacesQuad);
+	ParseObj("cube.obj", gTexturesBunny, gVerticesCube, gNormalsCube, gFacesCube);
 
 	glEnable(GL_DEPTH_TEST); // enable depth-testing
 
 	initShaders();
 
 	initVBO();
-	// initVBO(gVerticesQuad, gNormalsQuad, gFacesQuad);
 }
 
 void drawModel(vector<Face> &gFaces)
@@ -483,9 +613,15 @@ void display()
 	glClearStencil(0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-	static float angle = 0;
+	// ############################# Draw the bunny Start #############################
 
-	float angleRad = (float)(angle / 180.0) * M_PI;
+	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferBunny);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferBunny);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesBunny.size() * 3 * sizeof(GLfloat)));
 
 	// Handle bunny hopping
 	static float y_value = 0;
@@ -521,7 +657,7 @@ void display()
 		y_value -= 0.1;
 	}
 
-	modelingMatrix = matT * matR * matTy;
+	modelingMatrixBunny = matT * matR * matTy;
 
 	// or... (care for the order! first the very bottom one is applied)
 	// modelingMatrix = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -3.f));
@@ -529,30 +665,30 @@ void display()
 	// modelingMatrix = glm::rotate<float>(modelingMatrix, (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
 
 	// Set the active program and the values of its uniform variables
-	glUseProgram(gProgram[0]);
-	glUniformMatrix4fv(projectionMatrixLoc[0], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniformMatrix4fv(viewingMatrixLoc[0], 1, GL_FALSE, glm::value_ptr(viewingMatrix));
-	glUniformMatrix4fv(modelingMatrixLoc[0], 1, GL_FALSE, glm::value_ptr(modelingMatrix));
-	glUniform3fv(eyePosLoc[0], 1, glm::value_ptr(eyePos));
+	glUseProgram(gProgram[bunnyProgram]);
+	glUniformMatrix4fv(projectionMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(projectionMatrixBunny));
+	glUniformMatrix4fv(viewingMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(viewingMatrixBunny));
+	glUniformMatrix4fv(modelingMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(modelingMatrixBunny));
 
 	// Draw the scene
 	drawModel(gFacesBunny);
 
-	angle += 0.9;
+	// ############################# Draw the bunny End #############################
 
-	glm::mat4 matT2 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -10.f));
-	glm::mat4 matS2 = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
-	glm::mat4 matR2 = glm::rotate<float>(glm::mat4(1.0), (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
-	glm::mat4 matRz2 = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
-	modelingMatrix = matT2 * matRz2 * matR2; // starting from right side, rotate around Y to turn back, then rotate around Z some more at each frame, then translate.
+	// ############################# Draw the quad Start #############################
 
-	glUseProgram(gProgram[1]);
-	glUniformMatrix4fv(projectionMatrixLoc[1], 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-	glUniformMatrix4fv(viewingMatrixLoc[1], 1, GL_FALSE, glm::value_ptr(viewingMatrix));
-	glUniformMatrix4fv(modelingMatrixLoc[1], 1, GL_FALSE, glm::value_ptr(modelingMatrix));
-	// glUniform3fv(eyePosLoc[1], 1, glm::value_ptr(eyePos));
+	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferQuad);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferQuad);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesQuad.size() * 3 * sizeof(GLfloat)));
 
-	// Draw the scene
+	glUseProgram(gProgram[bunnyProgram]);
+	glUniformMatrix4fv(projectionMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(projectionMatrixBunny));
+	glUniformMatrix4fv(viewingMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(viewingMatrixBunny));
+	glUniformMatrix4fv(modelingMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(modelingMatrixBunny));
+
 	drawModel(gFacesQuad);
 }
 
@@ -568,14 +704,18 @@ void reshape(GLFWwindow *window, int w, int h)
 
 	// Use perspective projection
 	float fovyRad = (float)(90.0 / 180.0) * M_PI;
-	projectionMatrix = glm::perspective(fovyRad, w / (float)h, 1.0f, 100.0f);
+	projectionMatrixBunny = glm::perspective(fovyRad, w / (float)h, 1.0f, 100.0f);
+	projectionMatrixQuad = glm::perspective(fovyRad, w / (float)h, 1.0f, 100.0f);
+	projectionMatrixCube = glm::perspective(fovyRad, w / (float)h, 1.0f, 100.0f);
 
 	// Assume default camera position and orientation (camera is at
 	// (0, 0, 0) with looking at -z direction and its up vector pointing
 	// at +y direction)
 	//
 	// viewingMatrix = glm::mat4(1);
-	viewingMatrix = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0) + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+	viewingMatrixBunny = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0) + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+	viewingMatrixQuad = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0) + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+	viewingMatrixCube = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0) + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
 }
 
 void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -583,14 +723,6 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
 	if (key == GLFW_KEY_Q && action == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
-	}
-	else if (key == GLFW_KEY_G && action == GLFW_PRESS)
-	{
-		activeProgramIndex = 0;
-	}
-	else if (key == GLFW_KEY_P && action == GLFW_PRESS)
-	{
-		activeProgramIndex = 1;
 	}
 	else if (key == GLFW_KEY_F && action == GLFW_PRESS)
 	{
