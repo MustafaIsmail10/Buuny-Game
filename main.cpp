@@ -654,7 +654,7 @@ void display()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesBunny.size() * 3 * sizeof(GLfloat)));
 
 	// Handle bunny hopping
-	static float y_value = 0;
+	static double y_value = 0;
 	static bool isGoingUp = true;
 
 	// Compute the modeling matrix
@@ -664,30 +664,33 @@ void display()
 	// glm::mat4 matRz = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
 	// modelingMatrix = matT * matRz * matR; // starting from right side, rotate around Y to turn back, then rotate around Z some more at each frame, then translate.
 
+	glm::mat4 matBunnyScale = glm::scale(glm::mat4(1.0), glm::vec3(0.2, 0.2, 0.2));
+
 	// Model matrix to make the bunny jump up and down
-	glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -8.f, -10.f));
+	glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -1.f, -1.3f));
 	// Rotate the bunny aroudd the Y axis 90 degrees
 	glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0), -M_PI / 2., glm::vec3(0.0, 1.0, 0.0));
 	// Translate the bunny up and down
 	glm::mat4 matTy = glm::translate(glm::mat4(1.0), glm::vec3(0.f, y_value, 0.f));
+
 	if (isGoingUp)
 	{
-		if (y_value >= 3)
+		if (y_value >= .35)
 		{
 			isGoingUp = false;
 		}
-		y_value += 0.1;
+		y_value += 0.05;
 	}
 	else
 	{
-		if (y_value <= -1)
+		if (y_value <= 0)
 		{
 			isGoingUp = true;
 		}
-		y_value -= 0.1;
+		y_value -= 0.05;
 	}
 
-	modelingMatrixBunny = matT * matR * matTy;
+	modelingMatrixBunny = matTy * matT * matR * matBunnyScale;
 
 	// or... (care for the order! first the very bottom one is applied)
 	// modelingMatrix = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -3.f));
@@ -715,12 +718,15 @@ void display()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesQuad.size() * 3 * sizeof(GLfloat)));
 
 	// angle
-	glm::mat4 matT2 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -10.f));
-	glm::mat4 matS2 = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
+
+	glm::mat4 matRQuad = glm::rotate<float>(glm::mat4(1.0), 85, glm::vec3(1.0, 0.0, 0.0));
+	glm::mat4 matS2 = glm::scale(glm::mat4(1.0), glm::vec3(2, 1, 100));
+	glm::mat4 matT2 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -1.0f, -1.0f));
+
 	glm::mat4 matR2 = glm::rotate<float>(glm::mat4(1.0), (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
 	// glm::mat4 matRz = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
 
-	modelingMatrixQuad = matT2 * matS2 * matR2;
+	modelingMatrixQuad = matT2 * matS2 * matRQuad;
 
 	glUseProgram(gProgram[quadProgram]);
 	glUniformMatrix4fv(projectionMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(projectionMatrixQuad));
