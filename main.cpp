@@ -46,19 +46,20 @@ glm::mat4 modelingMatrixQuad;
 
 // ############################# Quad transformation Matricis End #############################
 
-// ############################# Cube transformation Matricis Start #############################
+// ############################# Cube Data Start #############################
 GLint modelingMatrixLocCube;
 GLint viewingMatrixLocCube;
 GLint projectionMatrixLocCube;
-GLint cube1_colorLoc;
-GLint cube2_colorLoc;
-GLint cube3_colorLoc;
+GLint kdLoc;
+
+glm::vec3 red = glm::vec3(1.0, .2, .2);
+glm::vec3 yellow = glm::vec3(1.0, 1.0, .2);
 
 glm::mat4 projectionMatrixCube;
 glm::mat4 viewingMatrixCube;
 glm::mat4 modelingMatrixCube;
 
-// ############################# Cube transformation Matricis End #############################
+// ############################# Cube Data End #############################
 
 // ############################# Global variables for bunny, quad, and cube shading programs Start #############################
 const int bunnyProgram = 0;
@@ -429,6 +430,7 @@ void initShaders()
 	modelingMatrixLocCube = glGetUniformLocation(gProgram[cubeProgram], "modelingMatrix");
 	viewingMatrixLocCube = glGetUniformLocation(gProgram[cubeProgram], "viewingMatrix");
 	projectionMatrixLocCube = glGetUniformLocation(gProgram[cubeProgram], "projectionMatrix");
+	kdLoc = glGetUniformLocation(gProgram[cubeProgram], "kd");
 }
 
 // ############################# Reading shader files and creating shader objects End #############################
@@ -771,6 +773,15 @@ void display()
 	glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
 	glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
 
+	if (yellow_cube == 0)
+	{
+		glUniform3fv(kdLoc, 1, glm::value_ptr(yellow));
+	}
+	else
+	{
+		glUniform3fv(kdLoc, 1, glm::value_ptr(red));
+	}
+
 	drawModel(gFacesCube);
 
 	// ############################# Draw the CUBE 2 Start #############################
@@ -791,6 +802,15 @@ void display()
 	glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
 	glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
 
+	if (yellow_cube == 1)
+	{
+		glUniform3fv(kdLoc, 1, glm::value_ptr(yellow));
+	}
+	else
+	{
+		glUniform3fv(kdLoc, 1, glm::value_ptr(red));
+	}
+
 	drawModel(gFacesCube);
 
 	// ############################# Draw the CUBE 3 Start #############################
@@ -810,6 +830,15 @@ void display()
 	glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
 	glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
 	glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
+
+	if (yellow_cube == 2)
+	{
+		glUniform3fv(kdLoc, 1, glm::value_ptr(yellow));
+	}
+	else
+	{
+		glUniform3fv(kdLoc, 1, glm::value_ptr(red));
+	}
 
 	drawModel(gFacesCube);
 }
