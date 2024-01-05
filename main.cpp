@@ -78,6 +78,10 @@ GLuint gVertexAttribBuffer, gIndexBuffer;
 GLint gInVertexLoc, gInNormalLoc;
 int gVertexDataSizeInBytes, gNormalDataSizeInBytes;
 
+/*
+This function parses the obj file and stores the vertices, normals, and faces in the global variables (gVertices, gNormals, and gFaces).
+Those global variables are then used to create the vertex buffer object (VBO) and the index buffer object (IBO) in initVBO().
+*/
 bool ParseObj(const string &fileName)
 {
 	fstream myfile;
@@ -212,6 +216,7 @@ bool ParseObj(const string &fileName)
 	return true;
 }
 
+// ############################# Reading shader files and creating shader objects Start #############################
 bool ReadDataFromFile(
 	const string &fileName, ///< [in]  Name of the shader file
 	string &data)			///< [out] The contents of the file
@@ -349,6 +354,8 @@ void initShaders()
 	}
 }
 
+// ############################# Reading shader files and creating shader objects End #############################
+
 void initVBO()
 {
 	GLuint vao;
@@ -372,6 +379,7 @@ void initVBO()
 	gVertexDataSizeInBytes = gVertices.size() * 3 * sizeof(GLfloat);
 	gNormalDataSizeInBytes = gNormals.size() * 3 * sizeof(GLfloat);
 	int indexDataSizeInBytes = gFaces.size() * 3 * sizeof(GLuint);
+
 	GLfloat *vertexData = new GLfloat[gVertices.size() * 3];
 	GLfloat *normalData = new GLfloat[gNormals.size() * 3];
 	GLuint *indexData = new GLuint[gFaces.size() * 3];
@@ -431,12 +439,14 @@ void initVBO()
 
 void init()
 {
+	// Parsing objects from obj files
 	ParseObj("bunny.obj");
-	// ParseObj("bunny.obj");
-	ParseObj("quad.obj");
+	// ParseObj("quad.obj");
 
-	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST); // enable depth-testing
+
 	initShaders();
+
 	initVBO();
 }
 
@@ -472,23 +482,28 @@ void display()
 	// glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0), (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
 	// glm::mat4 matRz = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
 	// modelingMatrix = matT * matRz * matR; // starting from right side, rotate around Y to turn back, then rotate around Z some more at each frame, then translate.
-	
+
 	// Model matrix to make the bunny jump up and down
 	glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -8.f, -10.f));
 	// Rotate the bunny aroudd the Y axis 90 degrees
-	glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0),  - M_PI / 2., glm::vec3(0.0, 1.0, 0.0));
+	glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0), -M_PI / 2., glm::vec3(0.0, 1.0, 0.0));
 	// Translate the bunny up and down
 	glm::mat4 matTy = glm::translate(glm::mat4(1.0), glm::vec3(0.f, y_value, 0.f));
-	if (isGoingUp) {
-		if (y_value >= 1) {
+	if (isGoingUp)
+	{
+		if (y_value >= 3)
+		{
 			isGoingUp = false;
 		}
-		y_value += 0.05;
-	} else {
-		if (y_value <= -1) {
+		y_value += 0.1;
+	}
+	else
+	{
+		if (y_value <= -1)
+		{
 			isGoingUp = true;
 		}
-		y_value -= 0.05;
+		y_value -= 0.1;
 	}
 
 	modelingMatrix = matT * matR * matTy;
