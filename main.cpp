@@ -16,10 +16,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
-
 using namespace std;
 
 int gWidth, gHeight;
+float speed = 1;
 
 // ############################# Bunny transformation Matricis Start #############################
 GLint modelingMatrixLocBunny;
@@ -676,13 +676,16 @@ void display()
 	// Translate the bunny up and down
 	glm::mat4 matTy = glm::translate(glm::mat4(1.0), glm::vec3(0.f, y_value, 0.f));
 
+	float increment_value = .01 * speed + .01;
+	printf("increment_value = %f\n", increment_value);
+
 	if (isGoingUp)
 	{
 		if (y_value >= .35)
 		{
 			isGoingUp = false;
 		}
-		y_value += 0.05;
+		y_value += increment_value;
 	}
 	else
 	{
@@ -690,7 +693,7 @@ void display()
 		{
 			isGoingUp = true;
 		}
-		y_value -= 0.05;
+		y_value -= increment_value;
 	}
 
 	modelingMatrixBunny = matTy * matT * matR * matBunnyScale;
@@ -721,7 +724,8 @@ void display()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesQuad.size() * 3 * sizeof(GLfloat)));
 
 	// angle
-	offset += 0.1;
+	increment_value = .01 * speed + .05;
+	offset += increment_value;
 
 	glm::mat4 matRQuad = glm::rotate<float>(glm::mat4(1.0), 85, glm::vec3(1.0, 0.0, 0.0));
 	glm::mat4 matS2 = glm::scale(glm::mat4(1.0), glm::vec3(2, 1, 200));
@@ -838,6 +842,7 @@ void mainLoop(GLFWwindow *window)
 {
 	while (!glfwWindowShouldClose(window))
 	{
+		speed += 0.002;
 		display();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
