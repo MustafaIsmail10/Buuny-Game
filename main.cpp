@@ -739,7 +739,7 @@ void display()
 
 	drawModel(gFacesQuad);
 
-	// ############################# Draw the CUBE 1 Start #############################
+	// ############################# Draw the Red CUBE 1 Start #############################
 
 	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
@@ -748,13 +748,33 @@ void display()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
 
-	// angle
 	glm::mat4 matT3 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 5.f, -10.f));
-	glm::mat4 matS3 = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
-	glm::mat4 matR3 = glm::rotate<float>(glm::mat4(1.0), (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
-	// glm::mat4 matRz = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
+	glm::mat4 matS3 = glm::scale(glm::mat4(1.0), glm::vec3(1, 1.5, 1));
+	// glm::mat4 matR3 = glm::rotate<float>(glm::mat4(1.0), M_PI / 2.0, glm::vec3(0.0, 1.0, 0.0));
+	// glm::mat4 matRz = glm::rotate(glm::mat4(1.0), M_PI * 0.2, glm::vec3(0.0, 0.0, 1.0));
+	modelingMatrixCube = matT3 * matS3;
 
-	modelingMatrixCube = matT3 * matS3 * matR3;
+	glUseProgram(gProgram[cubeProgram]);
+	glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
+	glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
+	glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
+
+	drawModel(gFacesCube);
+
+	// ############################# Draw the Red CUBE 2 Start #############################
+
+	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
+
+	matT3 = glm::translate(glm::mat4(1.0), glm::vec3(5.f, 5.f, -10.f));
+	matS3 = glm::scale(glm::mat4(1.0), glm::vec3(1, 1.5, 1));
+	// glm::mat4 matR3 = glm::rotate<float>(glm::mat4(1.0), M_PI / 2.0, glm::vec3(0.0, 1.0, 0.0));
+	// glm::mat4 matRz = glm::rotate(glm::mat4(1.0), M_PI * 0.2, glm::vec3(0.0, 0.0, 1.0));
+	modelingMatrixCube = matT3 * matS3;
 
 	glUseProgram(gProgram[cubeProgram]);
 	glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
