@@ -439,6 +439,8 @@ void initVBO()
 	glGenBuffers(1, &gVertexAttribBufferBunny);
 	glGenBuffers(1, &gIndexBufferBunny);
 
+	// cout << "gVertexAttribBufferBunny = " << gVertexAttribBufferBunny << endl;
+
 	assert(gVertexAttribBufferBunny > 0 && gIndexBufferBunny > 0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferBunny);
@@ -502,6 +504,13 @@ void initVBO()
 	delete[] indexData;
 
 	// ############################# Quad VBO Start #############################
+	// glGenVertexArrays(1, &vao);
+	// assert(vao > 0);
+	// glBindVertexArray(vao);
+	// cout << "vao = " << vao << endl;
+
+	// assert(glGetError() == GL_NONE);
+
 	glGenBuffers(1, &gVertexAttribBufferQuad);
 	glGenBuffers(1, &gIndexBufferQuad);
 
@@ -705,12 +714,44 @@ void display()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesQuad.size() * 3 * sizeof(GLfloat)));
 
-	glUseProgram(gProgram[bunnyProgram]);
-	glUniformMatrix4fv(projectionMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(projectionMatrixBunny));
-	glUniformMatrix4fv(viewingMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(viewingMatrixBunny));
-	glUniformMatrix4fv(modelingMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(modelingMatrixBunny));
+	// angle
+	glm::mat4 matT2 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -10.f));
+	glm::mat4 matS2 = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
+	glm::mat4 matR2 = glm::rotate<float>(glm::mat4(1.0), (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
+	// glm::mat4 matRz = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
+
+	modelingMatrixQuad = matT2 * matS2 * matR2;
+
+	glUseProgram(gProgram[quadProgram]);
+	glUniformMatrix4fv(projectionMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(projectionMatrixQuad));
+	glUniformMatrix4fv(viewingMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(viewingMatrixQuad));
+	glUniformMatrix4fv(modelingMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(modelingMatrixQuad));
 
 	drawModel(gFacesQuad);
+
+	// ############################# Draw the CUBE 1 Start #############################
+
+	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
+
+	// angle
+	glm::mat4 matT3 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 5.f, -10.f));
+	glm::mat4 matS3 = glm::scale(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5));
+	glm::mat4 matR3 = glm::rotate<float>(glm::mat4(1.0), (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
+	// glm::mat4 matRz = glm::rotate(glm::mat4(1.0), angleRad, glm::vec3(0.0, 0.0, 1.0));
+
+	modelingMatrixCube = matT3 * matS3 * matR3;
+
+	glUseProgram(gProgram[cubeProgram]);
+	glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
+	glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
+	glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
+
+	drawModel(gFacesCube);
 }
 
 void reshape(GLFWwindow *window, int w, int h)
