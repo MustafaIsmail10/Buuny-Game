@@ -3,7 +3,7 @@
 // All of the following variables could be defined in the OpenGL
 // program and passed to this shader as uniform variables. This
 // would be necessary if their values could change during runtim.
-// However, we will not change them and therefore we define them 
+// However, we will not change them and therefore we define them
 // here for simplicity.
 
 vec3 I = vec3(1, 1, 1);          // point light intensity
@@ -23,6 +23,9 @@ layout(location=1) in vec3 inNormal;
 
 out vec4 color;
 
+out vec4 vertexPos;
+
+
 void main(void)
 {
 	// First, convert to world coordinates. This is where
@@ -31,7 +34,7 @@ void main(void)
 	// components. For computing the normal transformation
 	// matrix we use the upper 3x3 part of the modeling
 	// matrix.
-	 
+
 	vec4 pWorld = modelingMatrix * vec4(inVertex, 1);
 	vec3 nWorld = inverse(transpose(mat3x3(modelingMatrix))) * inNormal;
 
@@ -61,5 +64,7 @@ void main(void)
 	// modeling matrices.
 
     gl_Position = projectionMatrix * viewingMatrix * modelingMatrix * vec4(inVertex, 1);
+
+	vertexPos = gl_Position;
 }
 
