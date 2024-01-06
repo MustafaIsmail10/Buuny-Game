@@ -75,6 +75,8 @@ float speed = 1;
 uint yellow_cube = 0;
 float bunny_horizontal_location = 0;
 float bunny_shift_buffer = 0;
+bool is_cube_collided = false;
+uint collison_cube = 0;
 
 // ############################# Game logic Global Variables End ###############################
 
@@ -732,92 +734,99 @@ void display()
 
 	drawModel(gFacesQuad);
 
+	// ############################# Draw the CUBE 0 Start #############################
+	if (!(is_cube_collided and collison_cube == 0))
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
+
+		glm::mat4 matSC1 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .4, .4));
+		glm::mat4 matTC1 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -.8f, -16.f + offset));
+		modelingMatrixCube = matTC1 * matSC1;
+
+		glUseProgram(gProgram[cubeProgram]);
+		glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
+		glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
+		glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
+
+		if (yellow_cube == 0)
+		{
+			glUniform3fv(kdLoc, 1, glm::value_ptr(yellow));
+		}
+		else
+		{
+			glUniform3fv(kdLoc, 1, glm::value_ptr(red));
+		}
+
+		drawModel(gFacesCube);
+	}
+
 	// ############################# Draw the CUBE 1 Start #############################
 
-	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
-
-	glm::mat4 matSC1 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .4, .4));
-	glm::mat4 matTC1 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -.8f, -16.f + offset));
-	modelingMatrixCube = matTC1 * matSC1;
-
-	glUseProgram(gProgram[cubeProgram]);
-	glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
-	glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
-	glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
-
-	if (yellow_cube == 0)
+	if (!(is_cube_collided and collison_cube == 1))
 	{
-		glUniform3fv(kdLoc, 1, glm::value_ptr(yellow));
-	}
-	else
-	{
-		glUniform3fv(kdLoc, 1, glm::value_ptr(red));
-	}
+		glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
 
-	drawModel(gFacesCube);
+		glm::mat4 matSC2 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .4, .4));
+		glm::mat4 matTC2 = glm::translate(glm::mat4(1.0), glm::vec3(1.15f, -.8f, -16.0f + offset));
+		modelingMatrixCube = matTC2 * matSC2;
+
+		glUseProgram(gProgram[cubeProgram]);
+		glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
+		glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
+		glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
+
+		if (yellow_cube == 1)
+		{
+			glUniform3fv(kdLoc, 1, glm::value_ptr(yellow));
+		}
+		else
+		{
+			glUniform3fv(kdLoc, 1, glm::value_ptr(red));
+		}
+
+		drawModel(gFacesCube);
+	}
 
 	// ############################# Draw the CUBE 2 Start #############################
 
-	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
-
-	glm::mat4 matSC2 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .4, .4));
-	glm::mat4 matTC2 = glm::translate(glm::mat4(1.0), glm::vec3(1.15f, -.8f, -16.0f + offset));
-	modelingMatrixCube = matTC2 * matSC2;
-
-	glUseProgram(gProgram[cubeProgram]);
-	glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
-	glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
-	glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
-
-	if (yellow_cube == 1)
 	{
-		glUniform3fv(kdLoc, 1, glm::value_ptr(yellow));
+		glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
+
+		glm::mat4 matSC3 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .4, .4));
+		glm::mat4 matTC3 = glm::translate(glm::mat4(1.0), glm::vec3(-1.15f, -.8f, -16.0f + offset));
+		modelingMatrixCube = matTC3 * matSC3;
+
+		glUseProgram(gProgram[cubeProgram]);
+		glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
+		glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
+		glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
+
+		if (yellow_cube == 2)
+		{
+			glUniform3fv(kdLoc, 1, glm::value_ptr(yellow));
+		}
+		else
+		{
+			glUniform3fv(kdLoc, 1, glm::value_ptr(red));
+		}
+
+		drawModel(gFacesCube);
 	}
-	else
-	{
-		glUniform3fv(kdLoc, 1, glm::value_ptr(red));
-	}
-
-	drawModel(gFacesCube);
-
-	// ############################# Draw the CUBE 3 Start #############################
-
-	glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
-
-	glm::mat4 matSC3 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .4, .4));
-	glm::mat4 matTC3 = glm::translate(glm::mat4(1.0), glm::vec3(-1.15f, -.8f, -16.0f + offset));
-	modelingMatrixCube = matTC3 * matSC3;
-
-	glUseProgram(gProgram[cubeProgram]);
-	glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
-	glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
-	glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
-
-	if (yellow_cube == 2)
-	{
-		glUniform3fv(kdLoc, 1, glm::value_ptr(yellow));
-	}
-	else
-	{
-		glUniform3fv(kdLoc, 1, glm::value_ptr(red));
-	}
-
-	drawModel(gFacesCube);
 }
 
 void reshape(GLFWwindow *window, int w, int h)
@@ -913,11 +922,55 @@ void gameLogic()
 	{
 		offset = 0;
 		yellow_cube = rand() % 3;
+		is_cube_collided = false;
 	}
 
-	if (offset >= 14)
+	if (offset >= 14 && !is_cube_collided)
 	{
 		// Check of collision
+		if (bunny_horizontal_location <= -0.75)
+		// Dont render this cube anymore
+		{
+			is_cube_collided = true;
+			collison_cube = 2;
+			if (yellow_cube == 2)
+			{
+				std::cout << "Increase Score" << std::endl;
+			}
+			else
+			{
+				std::cout << "End Game" << std::endl;
+			}
+		}
+		else if (bunny_horizontal_location >= -0.4 && bunny_horizontal_location <= 0.4)
+		{
+
+			is_cube_collided = true;
+			collison_cube = 0;
+
+			if (yellow_cube == 0)
+			{
+				std::cout << "Increase Score" << std::endl;
+			}
+			else
+			{
+				std::cout << "End Game" << std::endl;
+			}
+		}
+		else if (bunny_horizontal_location >= 0.75)
+		{
+			is_cube_collided = true;
+			collison_cube = 1;
+
+			if (yellow_cube == 1)
+			{
+				std::cout << "Increase Score" << std::endl;
+			}
+			else
+			{
+				std::cout << "End Game" << std::endl;
+			}
+		}
 	}
 
 	float bunny_shift_value = .007 * speed + .01;
