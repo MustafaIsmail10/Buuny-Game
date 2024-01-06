@@ -139,13 +139,13 @@ GLuint gTextVBO;
 GLint gInVertexLoc, gInNormalLoc;
 uint gVertexDataSizeInBytes, gNormalDataSizeInBytes;
 
-
 /// Holds all state information relevant to a character as loaded using FreeType
-struct Character {
-    GLuint TextureID;   // ID handle of the glyph texture
-    glm::ivec2 Size;    // Size of glyph
-    glm::ivec2 Bearing;  // Offset from baseline to left/top of glyph
-    GLuint Advance;    // Horizontal offset to advance to next glyph
+struct Character
+{
+	GLuint TextureID;	// ID handle of the glyph texture
+	glm::ivec2 Size;	// Size of glyph
+	glm::ivec2 Bearing; // Offset from baseline to left/top of glyph
+	GLuint Advance;		// Horizontal offset to advance to next glyph
 };
 
 std::map<GLchar, Character> Characters;
@@ -371,6 +371,54 @@ GLuint createFS(const char *shaderName)
 	return fs;
 }
 
+void createVS(GLuint &program, const string &filename)
+{
+	string shaderSource;
+
+	if (!ReadDataFromFile(filename, shaderSource))
+	{
+		cout << "Cannot find file name: " + filename << endl;
+		exit(-1);
+	}
+
+	GLint length = shaderSource.length();
+	const GLchar *shader = (const GLchar *)shaderSource.c_str();
+
+	GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vs, 1, &shader, &length);
+	glCompileShader(vs);
+
+	char output[1024] = {0};
+	glGetShaderInfoLog(vs, 1024, &length, output);
+	printf("VS compile log: %s\n", output);
+
+	glAttachShader(program, vs);
+}
+
+void createFS(GLuint &program, const string &filename)
+{
+	string shaderSource;
+
+	if (!ReadDataFromFile(filename, shaderSource))
+	{
+		cout << "Cannot find file name: " + filename << endl;
+		exit(-1);
+	}
+
+	GLint length = shaderSource.length();
+	const GLchar *shader = (const GLchar *)shaderSource.c_str();
+
+	GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fs, 1, &shader, &length);
+	glCompileShader(fs);
+
+	char output[1024] = {0};
+	glGetShaderInfoLog(fs, 1024, &length, output);
+	printf("FS compile log: %s\n", output);
+
+	glAttachShader(program, fs);
+}
+
 void initShaders()
 {
 	// Create the programs
@@ -386,10 +434,14 @@ void initShaders()
 	GLuint fs0 = createFS("frag0.glsl");
 
 	GLuint vs1 = createVS("vert1.glsl");
-	GLuint fs1 = createFS("frag1.glsl");
+	// TODO MAHDI: change this to frag1.glsl
+	GLuint fs1 = createFS("frag0.glsl");
 
 	GLuint vs2 = createVS("vert2.glsl");
 	GLuint fs2 = createFS("frag2.glsl");
+
+	createVS(gProgram[2], "vert_text.glsl");
+	createFS(gProgram[2], "frag_text.glsl");
 
 	// Attach the shaders to the programs
 
@@ -401,6 +453,9 @@ void initShaders()
 
 	glAttachShader(gProgram[cubeProgram], vs2);
 	glAttachShader(gProgram[cubeProgram], fs2);
+
+	glBindAttribLocation(gProgram[2], 2, "vertex");
+	glLinkProgram(gProgram[2]);
 
 	// Link the programs
 
@@ -634,6 +689,56 @@ void initVBO()
 	delete[] indexData;
 
 	// ############################# Cube VBO End #############################
+}
+
+void renderText(const std::string &text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
+{
+	// Activate corresponding render state
+	glUseProgram(gProgram[2]);
+	glUniform3f(glGetUniformLocation(gProgram[2], "textColor"), color.x, color.y, color.z);
+	glActiveTexture(GL_TEXTURE0);
+
+	// Iterate through all characters
+	std::string::const_iterator c;
+	for (c = text.begin(); c != text.end(); c++)
+	{
+		Character ch = Characters[*c];
+
+		GLfloat xpos = x + ch.Bearing.x * scale;
+		GLfloat ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+
+		GLfloat w = ch.Size.x * scale;
+		GLfloat h = ch.Size.y * scale;
+
+		// Update VBO for each character
+		GLfloat vertices[6][4] = {
+			{xpos, ypos + h, 0.0, 0.0},
+			{xpos, ypos, 0.0, 1.0},
+			{xpos + w, ypos, 1.0, 1.0},
+
+			{xpos, ypos + h, 0.0, 0.0},
+			{xpos + w, ypos, 1.0, 1.0},
+			{xpos + w, ypos + h, 1.0, 0.0}};
+
+		// Render glyph texture over quad
+		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+
+		// Update content of VBO memory
+		glBindBuffer(GL_ARRAY_BUFFER, gTextVBO);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices),
+						vertices); // Be sure to use glBufferSubData and not glBufferData
+
+		// glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		// Render quad
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+
+		x += (ch.Advance >> 6) *
+			 scale; // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+	}
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void initFonts(int windowWidth, int windowHeight)
