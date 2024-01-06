@@ -822,9 +822,11 @@ void initFonts(int windowWidth, int windowHeight)
 	glGenBuffers(1, &gTextVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, gTextVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-
 	glEnableVertexAttribArray(2);
+
+	// ERROR HERE
 	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+	assert(glGetError() == GL_NONE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -839,7 +841,7 @@ void init()
 	glEnable(GL_DEPTH_TEST); // enable depth-testing
 
 	initShaders();
-
+	initFonts(gWidth, gHeight);
 	initVBO();
 }
 
