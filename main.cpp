@@ -17,10 +17,8 @@
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 using namespace std;
-
+#define EPSILON 0.0001
 int gWidth, gHeight;
-float speed = 1;
-uint yellow_cube = 0;
 
 // ############################# Bunny transformation Matricis Start #############################
 GLint modelingMatrixLocBunny;
@@ -67,6 +65,18 @@ const int quadProgram = 1;
 const int cubeProgram = 2;
 GLuint gProgram[3];
 // ############################# Global variables for bunny, quad, and cube shading programs End #############################
+
+// ############################# Game logic Global Variables Start #############################
+
+float bunny_move_vertical_value = 0.01;
+float bunny_vertical_shift = 0;
+bool isBunnyGoingUp = true;
+float speed = 1;
+uint yellow_cube = 0;
+float bunny_horizontal_location = 0;
+float bunny_shift_buffer = 0;
+
+// ############################# Game logic Global Variables End ###############################
 
 // ############################# Data structures for bunny, quad, and cube Start #############################
 struct Vertex
@@ -663,8 +673,6 @@ void display()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesBunny.size() * 3 * sizeof(GLfloat)));
 
 	// Handle bunny hopping
-	static double y_value = 0;
-	static bool isGoingUp = true;
 
 	// Compute the modeling matrix
 	// glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -10.f));
@@ -676,31 +684,11 @@ void display()
 	glm::mat4 matBunnyScale = glm::scale(glm::mat4(1.0), glm::vec3(0.15, 0.15, 0.15));
 
 	// Model matrix to make the bunny jump up and down
-	glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -1.0f, -1.3f));
+	glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(bunny_horizontal_location, -1.0f, -1.3f));
 	// Rotate the bunny aroudd the Y axis 90 degrees
 	glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0), -M_PI / 2., glm::vec3(0.0, 1.0, 0.0));
 	// Translate the bunny up and down
-	glm::mat4 matTy = glm::translate(glm::mat4(1.0), glm::vec3(0.f, y_value, 0.f));
-
-	float increment_value = .01 * speed + .01;
-	printf("increment_value = %f\n", increment_value);
-
-	if (isGoingUp)
-	{
-		if (y_value >= .35)
-		{
-			isGoingUp = false;
-		}
-		y_value += increment_value;
-	}
-	else
-	{
-		if (y_value <= 0)
-		{
-			isGoingUp = true;
-		}
-		y_value -= increment_value;
-	}
+	glm::mat4 matTy = glm::translate(glm::mat4(1.0), glm::vec3(0.f, bunny_vertical_shift, 0.f));
 
 	modelingMatrixBunny = matTy * matT * matR * matBunnyScale;
 
@@ -729,16 +717,6 @@ void display()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesQuad.size() * 3 * sizeof(GLfloat)));
 
-	// angle
-	increment_value = .02 * speed + .05;
-	offset += increment_value;
-
-	if (offset >= 16)
-	{
-		offset = 0;
-		yellow_cube = rand() % 3;
-	}
-
 	glm::mat4 matRQuad = glm::rotate<float>(glm::mat4(1.0), 90, glm::vec3(1.0, 0.0, 0.0));
 	glm::mat4 matS2 = glm::scale(glm::mat4(1.0), glm::vec3(2, 1, 200));
 	glm::mat4 matT2 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -1.0f, -1.0f));
@@ -750,7 +728,6 @@ void display()
 	glUniformMatrix4fv(viewingMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(viewingMatrixQuad));
 	glUniformMatrix4fv(modelingMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(modelingMatrixQuad));
 
-	printf("offset = %f\n", offset);
 	glUniform1f(offsetLoc, offset);
 
 	drawModel(gFacesQuad);
@@ -891,13 +868,105 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
+	else if (key == GLFW_KEY_A && action == GLFW_PRESS)
+	{
+
+		if (bunny_horizontal_location > -1)
+		{
+			bunny_shift_buffer -= .5;
+		}
+	}
+	else if (key == GLFW_KEY_D && action == GLFW_PRESS)
+	{
+		if (bunny_horizontal_location < 1)
+		{
+			bunny_shift_buffer += .5;
+		}
+	}
+}
+void gameLogic()
+{
+	speed += 0.002;
+
+	bunny_move_vertical_value = .007 * speed + .01;
+	if (isBunnyGoingUp)
+	{
+		if (bunny_vertical_shift >= .25)
+		{
+			isBunnyGoingUp = false;
+		}
+		bunny_vertical_shift += bunny_move_vertical_value;
+	}
+	else
+	{
+		if (bunny_vertical_shift <= 0)
+		{
+			isBunnyGoingUp = true;
+		}
+		bunny_vertical_shift -= bunny_move_vertical_value;
+	}
+
+	float offset_increment_value = .03 * speed + .05;
+	offset += offset_increment_value;
+
+	if (offset >= 16)
+	{
+		offset = 0;
+		yellow_cube = rand() % 3;
+	}
+
+	if (offset >= 14)
+	{
+		// Check of collision
+	}
+
+	float bunny_shift_value = .007 * speed + .01;
+	// bunny_horizontal_location += bunny_shift_value;
+	if (bunny_horizontal_location > 1)
+	{
+		bunny_horizontal_location = 1;
+		if (bunny_shift_buffer > 0)
+		{
+			bunny_shift_buffer = 0;
+		}
+	}
+	else if (bunny_horizontal_location < -1)
+	{
+
+		bunny_horizontal_location = -1;
+		if (bunny_shift_buffer < 0)
+		{
+			bunny_shift_buffer = 0;
+		}
+	}
+	else
+	{
+		if (bunny_shift_buffer > 0)
+		{
+			bunny_shift_buffer -= bunny_shift_value;
+			bunny_horizontal_location += bunny_shift_value;
+			if (bunny_shift_buffer < 0)
+			{
+				bunny_shift_buffer = 0;
+			}
+		}
+		else if (bunny_shift_buffer < 0)
+		{
+			bunny_shift_buffer += bunny_shift_value;
+			bunny_horizontal_location -= bunny_shift_value;
+			if (bunny_shift_buffer > 0)
+			{
+				bunny_shift_buffer = 0;
+			}
+		}
+	}
 }
 
 void mainLoop(GLFWwindow *window)
 {
 	while (!glfwWindowShouldClose(window))
 	{
-		speed += 0.002;
+		gameLogic();
 		display();
 		glfwSwapBuffers(window);
 		glfwPollEvents();
