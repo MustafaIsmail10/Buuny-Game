@@ -36,7 +36,6 @@ GLint modelingMatrixLocQuad;
 GLint viewingMatrixLocQuad;
 GLint projectionMatrixLocQuad;
 GLint offsetLoc;
-GLfloat offset = 0;
 
 glm::mat4 projectionMatrixQuad;
 glm::mat4 viewingMatrixQuad;
@@ -67,7 +66,7 @@ GLuint gProgram[3];
 // ############################# Global variables for bunny, quad, and cube shading programs End #############################
 
 // ############################# Game logic Global Variables Start #############################
-
+GLfloat offset = 0;
 float bunny_move_vertical_value = 0.01;
 float bunny_vertical_shift = 0;
 bool isBunnyGoingUp = true;
@@ -77,6 +76,12 @@ float bunny_horizontal_location = 0;
 float bunny_shift_buffer = 0;
 bool is_cube_collided = false;
 uint collison_cube = 0;
+long score = 0;
+bool should_celebrate = false;
+float bunny_celebrate_angle = 0;
+bool end_game = false;
+bool should_die = false;
+float bunny_die_angle = 0;
 
 // ############################# Game logic Global Variables End ###############################
 
@@ -690,9 +695,14 @@ void display()
 	// Rotate the bunny aroudd the Y axis 90 degrees
 	glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0), -M_PI / 2., glm::vec3(0.0, 1.0, 0.0));
 	// Translate the bunny up and down
+
+	glm::mat4 matCelebrate = glm::rotate<float>(glm::mat4(1.0), bunny_celebrate_angle, glm::vec3(0.0, 1.0, 0.0));
+
+	glm::mat4 matDie = glm::rotate<float>(glm::mat4(1.0), bunny_die_angle, glm::vec3(0.0, 0.0, -1.0));
+
 	glm::mat4 matTy = glm::translate(glm::mat4(1.0), glm::vec3(0.f, bunny_vertical_shift, 0.f));
 
-	modelingMatrixBunny = matTy * matT * matR * matBunnyScale;
+	modelingMatrixBunny = matTy * matT * matDie * matCelebrate * matR * matBunnyScale;
 
 	// or... (care for the order! first the very bottom one is applied)
 	// modelingMatrix = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -3.f));
@@ -798,7 +808,7 @@ void display()
 	}
 
 	// ############################# Draw the CUBE 2 Start #############################
-
+	if (!(is_cube_collided and collison_cube == 2))
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
@@ -892,6 +902,24 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
 			bunny_shift_buffer += .5;
 		}
 	}
+	else if (key == GLFW_KEY_R)
+	{
+		end_game = false;
+		score = 0;
+		speed = 1;
+		bunny_horizontal_location = 0;
+		bunny_vertical_shift = 0;
+		bunny_shift_buffer = 0;
+		offset = 0;
+		is_cube_collided = false;
+		collison_cube = -1;
+		yellow_cube = rand() % 3;
+		isBunnyGoingUp = true;
+		bunny_celebrate_angle = 0;
+		should_celebrate = false;
+		should_die = false;
+		bunny_die_angle = 0;
+	}
 }
 void gameLogic()
 {
@@ -918,6 +946,8 @@ void gameLogic()
 	float offset_increment_value = .03 * speed + .05;
 	offset += offset_increment_value;
 
+	score += long(offset_increment_value * 10 + 1); // Increase score based on distance covered
+
 	if (offset >= 16)
 	{
 		offset = 0;
@@ -933,13 +963,17 @@ void gameLogic()
 		{
 			is_cube_collided = true;
 			collison_cube = 2;
+
 			if (yellow_cube == 2)
 			{
 				std::cout << "Increase Score" << std::endl;
+				score += 1000;
+				should_celebrate = true;
 			}
 			else
 			{
 				std::cout << "End Game" << std::endl;
+				should_die = true;
 			}
 		}
 		else if (bunny_horizontal_location >= -0.4 && bunny_horizontal_location <= 0.4)
@@ -951,10 +985,13 @@ void gameLogic()
 			if (yellow_cube == 0)
 			{
 				std::cout << "Increase Score" << std::endl;
+				score += 1000;
+				should_celebrate = true;
 			}
 			else
 			{
 				std::cout << "End Game" << std::endl;
+				should_die = true;
 			}
 		}
 		else if (bunny_horizontal_location >= 0.75)
@@ -965,10 +1002,13 @@ void gameLogic()
 			if (yellow_cube == 1)
 			{
 				std::cout << "Increase Score" << std::endl;
+				score += 1000;
+				should_celebrate = true;
 			}
 			else
 			{
 				std::cout << "End Game" << std::endl;
+				should_die = true;
 			}
 		}
 	}
@@ -1013,14 +1053,43 @@ void gameLogic()
 			}
 		}
 	}
+
+	if (should_celebrate)
+	{
+		if (bunny_celebrate_angle < 2 * M_PI)
+		{
+			bunny_celebrate_angle += 0.05 * speed + .05;
+		}
+		else
+		{
+			should_celebrate = false;
+			bunny_celebrate_angle = 0;
+		}
+	}
+
+	if (should_die)
+	{
+		if (bunny_die_angle < M_PI / 2)
+		{
+			bunny_die_angle += 0.05 * speed + .05;
+		}
+		else
+		{
+			should_die = false;
+			end_game = true;
+		}
+	}
 }
 
 void mainLoop(GLFWwindow *window)
 {
 	while (!glfwWindowShouldClose(window))
 	{
-		gameLogic();
-		display();
+		if (!end_game)
+		{
+			gameLogic();
+			display();
+		}
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
