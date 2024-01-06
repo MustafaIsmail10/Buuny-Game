@@ -64,8 +64,8 @@ glm::mat4 modelingMatrixCube;
 // ############################# Global variables for bunny, quad, and cube shading programs Start #############################
 const int bunnyProgram = 0;
 const int quadProgram = 1;
-const int cubeProgram = 2;
-GLuint gProgram[3];
+const int cubeProgram = 3;
+GLuint gProgram[4];
 // ############################# Global variables for bunny, quad, and cube shading programs End #############################
 
 // ############################# Data structures for bunny, quad, and cube Start #############################
@@ -360,9 +360,10 @@ void initShaders()
 {
 	// Create the programs
 
-	gProgram[0] = glCreateProgram();
-	gProgram[1] = glCreateProgram();
+	gProgram[bunnyProgram] = glCreateProgram();
+	gProgram[quadProgram] = glCreateProgram();
 	gProgram[2] = glCreateProgram();
+	gProgram[cubeProgram] = glCreateProgram();
 
 	// Create the shaders for both programs
 
@@ -377,20 +378,20 @@ void initShaders()
 
 	// Attach the shaders to the programs
 
-	glAttachShader(gProgram[0], vs0);
-	glAttachShader(gProgram[0], fs0);
+	glAttachShader(gProgram[bunnyProgram], vs0);
+	glAttachShader(gProgram[bunnyProgram], fs0);
 
-	glAttachShader(gProgram[1], vs1);
-	glAttachShader(gProgram[1], fs1);
+	glAttachShader(gProgram[quadProgram], vs1);
+	glAttachShader(gProgram[quadProgram], fs1);
 
-	glAttachShader(gProgram[2], vs2);
-	glAttachShader(gProgram[2], fs2);
+	glAttachShader(gProgram[cubeProgram], vs2);
+	glAttachShader(gProgram[cubeProgram], fs2);
 
 	// Link the programs
 
-	glLinkProgram(gProgram[0]);
+	glLinkProgram(gProgram[bunnyProgram]);
 	GLint status;
-	glGetProgramiv(gProgram[0], GL_LINK_STATUS, &status);
+	glGetProgramiv(gProgram[bunnyProgram], GL_LINK_STATUS, &status);
 
 	if (status != GL_TRUE)
 	{
@@ -407,8 +408,8 @@ void initShaders()
 		exit(-1);
 	}
 
-	glLinkProgram(gProgram[2]);
-	glGetProgramiv(gProgram[2], GL_LINK_STATUS, &status);
+	glLinkProgram(gProgram[cubeProgram]);
+	glGetProgramiv(gProgram[cubeProgram], GL_LINK_STATUS, &status);
 
 	if (status != GL_TRUE)
 	{
