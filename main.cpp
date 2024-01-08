@@ -75,7 +75,7 @@ GLfloat offset = 0;
 float bunny_move_vertical_value = 0.01;
 float bunny_vertical_shift = 0;
 bool isBunnyGoingUp = true;
-float speed = 1;
+float speed = 5;
 uint yellow_cube = 0;
 float bunny_horizontal_location = 0;
 float bunny_shift_buffer = 0;
@@ -1216,7 +1216,7 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
     {
         end_game = false;
         score = 0;
-        speed = 1;
+        speed = 5;
         bunny_horizontal_location = 0;
         bunny_vertical_shift = 0;
         bunny_shift_buffer = 0;
