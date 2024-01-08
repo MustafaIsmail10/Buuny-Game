@@ -30,6 +30,7 @@ const int bunnyProgram = 3;
 const int quadProgram = 4;
 const int cubeProgram = 5;
 GLuint gProgram[6];
+
 // ############################# Global variables for bunny, quad, and cube shading programs End #############################
 
 // ############################# Bunny transformation Matricis Start #############################
@@ -50,6 +51,8 @@ GLint modelingMatrixLocQuad;
 GLint viewingMatrixLocQuad;
 GLint projectionMatrixLocQuad;
 GLint offsetLoc;
+GLint xScallingLoc;
+GLint yScallingLoc;
 
 glm::mat4 projectionMatrixQuad;
 glm::mat4 viewingMatrixQuad;
@@ -74,6 +77,8 @@ glm::mat4 modelingMatrixCube;
 
 // ############################# Game logic Global Variables Start #############################
 GLfloat offset = 0;
+GLfloat xScalling = 1.2;
+GLfloat yScalling = 1.2;
 float bunny_move_vertical_value = 0.01;
 float bunny_vertical_shift = 0;
 bool isBunnyGoingUp = true;
@@ -83,7 +88,7 @@ float bunny_horizontal_location = 0;
 float bunny_shift_buffer = 0;
 bool is_cube_collided = false;
 uint collison_cube = 0;
-long score = 0;
+double score = 0;
 bool should_celebrate = false;
 float bunny_celebrate_angle = 0;
 bool end_game = false;
@@ -568,6 +573,8 @@ void initShaders()
     viewingMatrixLocQuad = glGetUniformLocation(gProgram[quadProgram], "viewingMatrix");
     projectionMatrixLocQuad = glGetUniformLocation(gProgram[quadProgram], "projectionMatrix");
     offsetLoc = glGetUniformLocation(gProgram[quadProgram], "offset");
+    xScallingLoc = glGetUniformLocation(gProgram[quadProgram], "xscalling");
+    yScallingLoc = glGetUniformLocation(gProgram[quadProgram], "yscalling");
 
     modelingMatrixLocCube = glGetUniformLocation(gProgram[cubeProgram], "modelingMatrix");
     viewingMatrixLocCube = glGetUniformLocation(gProgram[cubeProgram], "viewingMatrix");
@@ -994,33 +1001,16 @@ void display()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesBunny.size() * 3 * sizeof(GLfloat)));
 
+    // Set the modeling transformations
     glm::mat4 matBunnyScale = glm::scale(glm::mat4(1.0), glm::vec3(0.15, 0.15, 0.15));
-
-    // Model matrix to make the bunny jump up and down
-    glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(bunny_horizontal_location, -1.0f, -1.3f));
-
-    // Rotate the bunny aroudd the Y axis 90 degrees
-    glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0), -M_PI / 2., glm::vec3(0.0, 1.0, 0.0));
-    // Translate the bunny up and down
-
+    glm::mat4 matBunnyTranslate = glm::translate(glm::mat4(1.0), glm::vec3(bunny_horizontal_location, -1.0f, -1.3f));
+    glm::mat4 matBunnyRotate = glm::rotate<float>(glm::mat4(1.0), -M_PI / 2., glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 matCelebrate = glm::rotate<float>(glm::mat4(1.0), bunny_celebrate_angle, glm::vec3(0.0, 1.0, 0.0));
-
     glm::mat4 matDie = glm::rotate<float>(glm::mat4(1.0), bunny_die_angle, glm::vec3(0.0, 0.0, -1.0));
+    glm::mat4 matBunnyJump = glm::translate(glm::mat4(1.0), glm::vec3(0.f, bunny_vertical_shift, 0.f));
+    modelingMatrixBunny = matBunnyJump * matBunnyTranslate * matDie * matCelebrate * matBunnyRotate * matBunnyScale;
 
-    glm::mat4 matTy = glm::translate(glm::mat4(1.0), glm::vec3(0.f, bunny_vertical_shift, 0.f));
-
-    // modelingMatrixBunny = matTy * matT * matDie * matCelebrate * matR * matBunnyScale;
-
-    modelingMatrixBunny = matTy * matT * matDie * matCelebrate * matR * matBunnyScale;
-
-    // or... (care for the order! first the very bottom one is applied)
-    // modelingMatrix = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -3.f));
-    // modelingMatrix = glm::rotate(modelingMatrix, angleRad, glm::vec3(0.0, 0.0, 1.0));
-    // modelingMatrix = glm::rotate<float>(modelingMatrix, (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
-
-    // Set the active program and the values of its uniform variables
     glUseProgram(gProgram[bunnyProgram]);
-
     modelingMatrixLocBunny = glGetUniformLocation(gProgram[bunnyProgram], "modelingMatrix");
     viewingMatrixLocBunny = glGetUniformLocation(gProgram[bunnyProgram], "viewingMatrix");
     projectionMatrixLocBunny = glGetUniformLocation(gProgram[bunnyProgram], "projectionMatrix");
@@ -1032,7 +1022,7 @@ void display()
 
     assert(glGetError() == GL_NO_ERROR);
 
-    // Draw the scene
+    // Draw the bunny
     drawModel(gFacesBunny);
     assert(glGetError() == GL_NO_ERROR);
 
@@ -1057,6 +1047,8 @@ void display()
     glUniformMatrix4fv(modelingMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(modelingMatrixQuad));
 
     glUniform1f(offsetLoc, offset);
+    glUniform1f(xScallingLoc, xScalling);
+    glUniform1f(yScallingLoc, yScalling);
 
     drawModel(gFacesQuad);
 
@@ -1157,12 +1149,10 @@ void display()
     // ########################## Draw the Text Start ################################
 
     // Convert score to string	and render it
-    std::string score_string = std::to_string(score);
+
+    std::string score_string = std::to_string(int(score));
     std::string string = "Score: " + score_string;
-    renderText(string, 0, gHeight - 50, 1, score_color);
-    //
-    // renderText(score_string, 0, gHeight - 50, 1, glm::vec3(0, 1, 1));
-    // renderText("CENG 477 - 2024", 0, gHeight - 50, 1, glm::vec3(0, 1, 1));
+    renderText(string, 0, 750, 1, score_color);
 
     // ########################## Draw the Text End ##################################
 }
@@ -1185,6 +1175,9 @@ void reshape(GLFWwindow *window, int w, int h)
     viewingMatrixBunny = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0) + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
     viewingMatrixQuad = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0) + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
     viewingMatrixCube = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0) + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+
+    // Update offsets
+    xScalling = (float)w / 800;
 }
 
 // ############################# Keyboard and Mouse Callbacks Start #############################
@@ -1258,7 +1251,7 @@ void gameLogic()
     float offset_increment_value = .03 * speed + .05;
     offset += offset_increment_value;
 
-    score += long(offset_increment_value * 10 + 1); // Increase score based on distance covered
+    score += offset_increment_value + 2; // Increase score based on distance covered
 
     if (offset >= 16)
     {

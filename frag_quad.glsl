@@ -1,16 +1,16 @@
 #version 330 core
 
 uniform float offset;
-uniform float xoffset = 10;
-uniform float yoffset = 0;
+uniform float xscalling = 1.2;
+uniform float yscalling = 0;
 out vec4 fragColor;
 in vec4 pos;
 
 void main(void) {
 
-	int x = int((pos.x + xoffset) * 1.2) % 2;
+	int x = int((pos.x + 10) * xscalling) % 2;
 
-	int y = int((pos.y + yoffset)) % 2;
+	int y = int((pos.y) * yscalling) % 2;
 
 	bool z = bool(int((pos.z + offset)) % 2);
 
