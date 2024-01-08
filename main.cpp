@@ -18,13 +18,80 @@
 #include FT_FREETYPE_H
 
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))
-
 using namespace std;
+#define EPSILON 0.0001
+int gWidth = 640, gHeight = 480;
 
-GLuint gProgram[3];
 GLint gIntensityLoc;
 float gIntensity = 1000;
-int gWidth = 640, gHeight = 480;
+
+// ############################# Global variables for bunny, quad, and cube shading programs Start #############################
+const int bunnyProgram = 0;
+const int quadProgram = 3;
+const int cubeProgram = 4;
+GLuint gProgram[5];
+// ############################# Global variables for bunny, quad, and cube shading programs End #############################
+
+
+
+// ############################# Bunny transformation Matricis Start #############################
+GLint modelingMatrixLocBunny;
+GLint viewingMatrixLocBunny;
+GLint projectionMatrixLocBunny;
+
+glm::mat4 projectionMatrixBunny;
+glm::mat4 viewingMatrixBunny;
+glm::mat4 modelingMatrixBunny;
+
+// ############################# Bunny transformation Matricis End #############################
+
+// ############################# Quad transformation Matricis Start #############################
+GLint modelingMatrixLocQuad;
+GLint viewingMatrixLocQuad;
+GLint projectionMatrixLocQuad;
+GLint offsetLoc;
+
+glm::mat4 projectionMatrixQuad;
+glm::mat4 viewingMatrixQuad;
+glm::mat4 modelingMatrixQuad;
+
+// ############################# Quad transformation Matricis End #############################
+
+// ############################# Cube Data Start #############################
+GLint modelingMatrixLocCube;
+GLint viewingMatrixLocCube;
+GLint projectionMatrixLocCube;
+GLint kdLoc;
+
+glm::vec3 red = glm::vec3(1.0, .2, .2);
+glm::vec3 yellow = glm::vec3(1.0, 1.0, .2);
+
+glm::mat4 projectionMatrixCube;
+glm::mat4 viewingMatrixCube;
+glm::mat4 modelingMatrixCube;
+
+// ############################# Cube Data End #############################
+
+// ############################# Game logic Global Variables Start #############################
+GLfloat offset = 0;
+float bunny_move_vertical_value = 0.01;
+float bunny_vertical_shift = 0;
+bool isBunnyGoingUp = true;
+float speed = 1;
+uint yellow_cube = 0;
+float bunny_horizontal_location = 0;
+float bunny_shift_buffer = 0;
+bool is_cube_collided = false;
+uint collison_cube = 0;
+long score = 0;
+bool should_celebrate = false;
+float bunny_celebrate_angle = 0;
+bool end_game = false;
+bool should_die = false;
+float bunny_die_angle = 0;
+
+// ############################# Game logic Global Variables End ###############################
+
 
 struct Vertex
 {
@@ -68,6 +135,39 @@ vector<Face> gFaces;
 GLuint gVertexAttribBuffer, gTextVBO, gIndexBuffer;
 GLint gInVertexLoc, gInNormalLoc;
 int gVertexDataSizeInBytes, gNormalDataSizeInBytes;
+
+
+// ############################# Global variables for bunny, quad, and cube Start #############################
+vector<Texture> gTexturesBunny;
+vector<Face> gFacesBunny;
+vector<Vertex> gVerticesBunny;
+vector<Normal> gNormalsBunny;
+
+vector<Texture> gTexturesQuad;
+vector<Face> gFacesQuad;
+vector<Vertex> gVerticesQuad;
+vector<Normal> gNormalsQuad;
+
+vector<Texture> gTexturesCube;
+vector<Face> gFacesCube;
+vector<Vertex> gVerticesCube;
+vector<Normal> gNormalsCube;
+
+// ############################# Global variables for bunny, quad, and cube End #############################
+GLuint gVertexAttribBufferBunny, gIndexBufferBunny;
+GLuint gVertexAttribBufferQuad, gIndexBufferQuad;
+GLuint gVertexAttribBufferCube, gIndexBufferCube;
+
+
+
+
+
+
+
+
+
+
+
 
 /// Holds all state information relevant to a character as loaded using FreeType
 struct Character {
