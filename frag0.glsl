@@ -1,12 +1,6 @@
-#version 330 core
-
-in vec4 color;
-out vec4 fragColor;
+#version 120
 
 void main(void)
 {
-	// Set the color of this fragment to the interpolated color
-	// value computed by the rasterizer.
-
-	fragColor = color;
+    gl_FragColor = gl_Color; // interpolated color computed by the rasterizer
 }
