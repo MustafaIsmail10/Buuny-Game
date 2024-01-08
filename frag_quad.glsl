@@ -1,17 +1,16 @@
 #version 330 core
 
 uniform float offset;
-
+uniform float xoffset = 10;
+uniform float yoffset = 0;
 out vec4 fragColor;
 in vec4 pos;
 
 void main(void) {
-	// Set the color of this fragment to the interpolated color
-	// value computed by the rasterizer.
 
-	int x = int((pos.x + 10) * 1.2) % 2;
+	int x = int((pos.x + xoffset) * 1.2) % 2;
 
-	int y = int((pos.y)) % 2;
+	int y = int((pos.y + yoffset)) % 2;
 
 	bool z = bool(int((pos.z + offset)) % 2);
 

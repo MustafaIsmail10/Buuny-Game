@@ -36,10 +36,12 @@ GLuint gProgram[6];
 GLint modelingMatrixLocBunny;
 GLint viewingMatrixLocBunny;
 GLint projectionMatrixLocBunny;
+GLint bunnyEyeLoc;
 
 glm::mat4 projectionMatrixBunny;
 glm::mat4 viewingMatrixBunny;
 glm::mat4 modelingMatrixBunny;
+glm::vec3 bunnyEyePos(0, 0, 0);
 
 // ############################# Bunny transformation Matricis End #############################
 
@@ -560,6 +562,7 @@ void initShaders()
     modelingMatrixLocBunny = glGetUniformLocation(gProgram[bunnyProgram], "modelingMatrix");
     viewingMatrixLocBunny = glGetUniformLocation(gProgram[bunnyProgram], "viewingMatrix");
     projectionMatrixLocBunny = glGetUniformLocation(gProgram[bunnyProgram], "projectionMatrix");
+    bunnyEyeLoc = glGetUniformLocation(gProgram[bunnyProgram], "eyePos");
 
     modelingMatrixLocQuad = glGetUniformLocation(gProgram[quadProgram], "modelingMatrix");
     viewingMatrixLocQuad = glGetUniformLocation(gProgram[quadProgram], "viewingMatrix");
@@ -1025,6 +1028,8 @@ void display()
     glUniformMatrix4fv(projectionMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(projectionMatrixBunny));
     glUniformMatrix4fv(viewingMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(viewingMatrixBunny));
     glUniformMatrix4fv(modelingMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(modelingMatrixBunny));
+    glUniform3fv(bunnyEyeLoc, 1, glm::value_ptr(bunnyEyePos));
+
     assert(glGetError() == GL_NO_ERROR);
 
     // Draw the scene
@@ -1065,7 +1070,7 @@ void display()
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
 
-        glm::mat4 matSC1 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .4, .4));
+        glm::mat4 matSC1 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .5, .2));
         glm::mat4 matTC1 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -.8f, -16.f + offset));
         modelingMatrixCube = matTC1 * matSC1;
 
@@ -1097,7 +1102,7 @@ void display()
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
 
-        glm::mat4 matSC2 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .4, .4));
+        glm::mat4 matSC2 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .5, .2));
         glm::mat4 matTC2 = glm::translate(glm::mat4(1.0), glm::vec3(1.15f, -.8f, -16.0f + offset));
         modelingMatrixCube = matTC2 * matSC2;
 
@@ -1128,7 +1133,7 @@ void display()
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
 
-        glm::mat4 matSC3 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .4, .4));
+        glm::mat4 matSC3 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .5, .2));
         glm::mat4 matTC3 = glm::translate(glm::mat4(1.0), glm::vec3(-1.15f, -.8f, -16.0f + offset));
         modelingMatrixCube = matTC3 * matSC3;
 
@@ -1150,13 +1155,13 @@ void display()
     }
 
     // ########################## Draw the Text Start ################################
-	
-	// Convert score to string	and render it
-	std::string score_string = std::to_string(score);
-	std::string string = "Score: " + score_string;
-	renderText(string, 0, gHeight - 50, 1, score_color);
-	//
-	// renderText(score_string, 0, gHeight - 50, 1, glm::vec3(0, 1, 1));
+
+    // Convert score to string	and render it
+    std::string score_string = std::to_string(score);
+    std::string string = "Score: " + score_string;
+    renderText(string, 0, gHeight - 50, 1, score_color);
+    //
+    // renderText(score_string, 0, gHeight - 50, 1, glm::vec3(0, 1, 1));
     // renderText("CENG 477 - 2024", 0, gHeight - 50, 1, glm::vec3(0, 1, 1));
 
     // ########################## Draw the Text End ##################################
@@ -1164,15 +1169,14 @@ void display()
 
 void reshape(GLFWwindow *window, int w, int h)
 {
+    // Update the viewport
     w = w < 1 ? 1 : w;
     h = h < 1 ? 1 : h;
-
     gWidth = w;
     gHeight = h;
-
     glViewport(0, 0, w, h);
 
-    // Set the projection matrix	// Use perspective projection
+    // Update the projection matrices
     float fovyRad = (float)(90.0 / 180.0) * M_PI;
     projectionMatrixBunny = glm::perspective(fovyRad, w / (float)h, 1.0f, 100.0f);
     projectionMatrixQuad = glm::perspective(fovyRad, w / (float)h, 1.0f, 100.0f);
@@ -1182,27 +1186,13 @@ void reshape(GLFWwindow *window, int w, int h)
     viewingMatrixQuad = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0) + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
     viewingMatrixCube = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0) + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
 }
+
+// ############################# Keyboard and Mouse Callbacks Start #############################
 void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_Q && action == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
-    }
-    else if (key == GLFW_KEY_F && action == GLFW_PRESS)
-    {
-        glShadeModel(GL_FLAT);
-    }
-    else if (key == GLFW_KEY_S && action == GLFW_PRESS)
-    {
-        glShadeModel(GL_SMOOTH);
-    }
-    else if (key == GLFW_KEY_W && action == GLFW_PRESS)
-    {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
-    else if (key == GLFW_KEY_E && action == GLFW_PRESS)
-    {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
     else if (key == GLFW_KEY_A && action == GLFW_PRESS)
     {
@@ -1221,7 +1211,7 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
     }
     else if (key == GLFW_KEY_R)
     {
-		score_color = glm::vec3(1, 1, 0);
+        score_color = glm::vec3(1, 1, 0);
         end_game = false;
         score = 0;
         speed = 5;
@@ -1239,6 +1229,10 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
         bunny_die_angle = 0;
     }
 }
+
+// ############################# Keyboard and Mouse Callbacks End ################################
+
+// ############################# Game Logic Start ################################
 void gameLogic()
 {
     speed += 0.002;
@@ -1277,22 +1271,19 @@ void gameLogic()
     {
         // Check of collision
         if (bunny_horizontal_location <= -0.75)
-        // Dont render this cube anymore
         {
             is_cube_collided = true;
             collison_cube = 2;
 
             if (yellow_cube == 2)
             {
-                std::cout << "Increase Score" << std::endl;
                 score += 1000;
                 should_celebrate = true;
             }
             else
             {
-                std::cout << "End Game" << std::endl;
                 should_die = true;
-				score_color = glm::vec3(1, 0, 0);
+                score_color = glm::vec3(1, 0, 0);
             }
         }
         else if (bunny_horizontal_location >= -0.4 && bunny_horizontal_location <= 0.4)
@@ -1303,15 +1294,13 @@ void gameLogic()
 
             if (yellow_cube == 0)
             {
-                std::cout << "Increase Score" << std::endl;
                 score += 1000;
                 should_celebrate = true;
             }
             else
             {
-                std::cout << "End Game" << std::endl;
                 should_die = true;
-				score_color = glm::vec3(1, 0, 0);
+                score_color = glm::vec3(1, 0, 0);
             }
         }
         else if (bunny_horizontal_location >= 0.75)
@@ -1321,15 +1310,13 @@ void gameLogic()
 
             if (yellow_cube == 1)
             {
-                std::cout << "Increase Score" << std::endl;
                 score += 1000;
                 should_celebrate = true;
             }
             else
             {
-                std::cout << "End Game" << std::endl;
                 should_die = true;
-				score_color = glm::vec3(1, 0, 0);
+                score_color = glm::vec3(1, 0, 0);
             }
         }
     }
@@ -1401,6 +1388,7 @@ void gameLogic()
         }
     }
 }
+// ############################# Game Logic End ################################
 
 void mainLoop(GLFWwindow *window)
 {
