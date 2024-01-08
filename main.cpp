@@ -474,7 +474,7 @@ void initShaders()
 	glAttachShader(gProgram[3], vs3);
 	glAttachShader(gProgram[3], fs2);
 
-	glBindAttribLocation(gProgram[2], 2, "vertex");
+	// glBindAttribLocation(gProgram[2], 2, "vertex");
 	glLinkProgram(gProgram[2]);
 
 	// Link the programs
