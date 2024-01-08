@@ -20,7 +20,7 @@
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 using namespace std;
 #define EPSILON 0.0001
-int gWidth = 640, gHeight = 480;
+int gWidth = 1000, gHeight = 800;
 
 GLint gIntensityLoc;
 float gIntensity = 1000;
@@ -573,9 +573,6 @@ void initShaders()
 
 void initVBO()
 {
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    assert(glGetError() == GL_NONE);
 
     glGenBuffers(1, &gVertexAttribBuffer);
     glGenBuffers(1, &gIndexBuffer);
@@ -641,8 +638,181 @@ void initVBO()
     delete[] normalData;
     delete[] indexData;
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVertexDataSizeInBytes));
+    // ############################# Bunny VBO Start #############################
+
+    glGenBuffers(1, &gVertexAttribBufferBunny);
+    glGenBuffers(1, &gIndexBufferBunny);
+
+    // cout << "gVertexAttribBufferBunny = " << gVertexAttribBufferBunny << endl;
+
+    assert(gVertexAttribBufferBunny > 0 && gIndexBufferBunny > 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferBunny);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferBunny);
+
+    gVertexDataSizeInBytes = gVerticesBunny.size() * 3 * sizeof(GLfloat);
+    gNormalDataSizeInBytes = gNormalsBunny.size() * 3 * sizeof(GLfloat);
+    indexDataSizeInBytes = gFacesBunny.size() * 3 * sizeof(GLuint);
+
+    vertexData = new GLfloat[gVerticesBunny.size() * 3];
+    normalData = new GLfloat[gNormalsBunny.size() * 3];
+    indexData = new GLuint[gFacesBunny.size() * 3];
+
+    minX = 1e6, maxX = -1e6;
+    minY = 1e6, maxY = -1e6;
+    minZ = 1e6, maxZ = -1e6;
+
+    for (int i = 0; i < gVerticesBunny.size(); ++i)
+    {
+        vertexData[3 * i] = gVerticesBunny[i].x;
+        vertexData[3 * i + 1] = gVerticesBunny[i].y;
+        vertexData[3 * i + 2] = gVerticesBunny[i].z;
+
+        minX = std::min(minX, gVerticesBunny[i].x);
+        maxX = std::max(maxX, gVerticesBunny[i].x);
+        minY = std::min(minY, gVerticesBunny[i].y);
+        maxY = std::max(maxY, gVerticesBunny[i].y);
+        minZ = std::min(minZ, gVerticesBunny[i].z);
+        maxZ = std::max(maxZ, gVerticesBunny[i].z);
+    }
+
+    std::cout << "minX = " << minX << std::endl;
+    std::cout << "maxX = " << maxX << std::endl;
+    std::cout << "minY = " << minY << std::endl;
+    std::cout << "maxY = " << maxY << std::endl;
+    std::cout << "minZ = " << minZ << std::endl;
+    std::cout << "maxZ = " << maxZ << std::endl;
+
+    for (int i = 0; i < gNormalsBunny.size(); ++i)
+    {
+        normalData[3 * i] = gNormalsBunny[i].x;
+        normalData[3 * i + 1] = gNormalsBunny[i].y;
+        normalData[3 * i + 2] = gNormalsBunny[i].z;
+    }
+
+    for (int i = 0; i < gFacesBunny.size(); ++i)
+    {
+        indexData[3 * i] = gFacesBunny[i].vIndex[0];
+        indexData[3 * i + 1] = gFacesBunny[i].vIndex[1];
+        indexData[3 * i + 2] = gFacesBunny[i].vIndex[2];
+    }
+
+    glBufferData(GL_ARRAY_BUFFER, gVertexDataSizeInBytes + gNormalDataSizeInBytes, 0, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, gVertexDataSizeInBytes, vertexData);
+    glBufferSubData(GL_ARRAY_BUFFER, gVertexDataSizeInBytes, gNormalDataSizeInBytes, normalData);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSizeInBytes, indexData, GL_STATIC_DRAW);
+
+    // done copying to GPU memory; can free now from CPU memory
+    delete[] vertexData;
+    delete[] normalData;
+    delete[] indexData;
+
+    // // ############################# Quad VBO Start #############################
+    // glGenVertexArrays(1, &vao);
+    // assert(vao > 0);
+    // glBindVertexArray(vao);
+    // cout << "vao = " << vao << endl;
+
+    // assert(glGetError() == GL_NONE);
+
+    glGenBuffers(1, &gVertexAttribBufferQuad);
+    glGenBuffers(1, &gIndexBufferQuad);
+
+    assert(gVertexAttribBufferQuad > 0 && gIndexBufferQuad > 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferQuad);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferQuad);
+
+    gVertexDataSizeInBytes = gVerticesQuad.size() * 3 * sizeof(GLfloat);
+    gNormalDataSizeInBytes = gNormalsQuad.size() * 3 * sizeof(GLfloat);
+    indexDataSizeInBytes = gFacesQuad.size() * 3 * sizeof(GLuint);
+
+    vertexData = new GLfloat[gVerticesQuad.size() * 3];
+    normalData = new GLfloat[gNormalsQuad.size() * 3];
+    indexData = new GLuint[gFacesQuad.size() * 3];
+
+    for (int i = 0; i < gVerticesQuad.size(); ++i)
+    {
+        vertexData[3 * i] = gVerticesQuad[i].x;
+        vertexData[3 * i + 1] = gVerticesQuad[i].y;
+        vertexData[3 * i + 2] = gVerticesQuad[i].z;
+    }
+
+    for (int i = 0; i < gNormalsQuad.size(); ++i)
+    {
+        normalData[3 * i] = gNormalsQuad[i].x;
+        normalData[3 * i + 1] = gNormalsQuad[i].y;
+        normalData[3 * i + 2] = gNormalsQuad[i].z;
+    }
+
+    for (int i = 0; i < gFacesQuad.size(); ++i)
+    {
+        indexData[3 * i] = gFacesQuad[i].vIndex[0];
+        indexData[3 * i + 1] = gFacesQuad[i].vIndex[1];
+        indexData[3 * i + 2] = gFacesQuad[i].vIndex[2];
+    }
+
+    glBufferData(GL_ARRAY_BUFFER, gVertexDataSizeInBytes + gNormalDataSizeInBytes, 0, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, gVertexDataSizeInBytes, vertexData);
+    glBufferSubData(GL_ARRAY_BUFFER, gVertexDataSizeInBytes, gNormalDataSizeInBytes, normalData);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSizeInBytes, indexData, GL_STATIC_DRAW);
+
+    // done copying to GPU memory; can free now from CPU memory
+    delete[] vertexData;
+    delete[] normalData;
+    delete[] indexData;
+
+    // // ############################# Quad VBO End #############################
+
+    // ############################# Cube VBO Start #############################
+    glGenBuffers(1, &gVertexAttribBufferCube);
+    glGenBuffers(1, &gIndexBufferCube);
+
+    assert(gVertexAttribBufferCube > 0 && gIndexBufferCube > 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
+
+    gVertexDataSizeInBytes = gVerticesCube.size() * 3 * sizeof(GLfloat);
+    gNormalDataSizeInBytes = gNormalsCube.size() * 3 * sizeof(GLfloat);
+    indexDataSizeInBytes = gFacesCube.size() * 3 * sizeof(GLuint);
+
+    vertexData = new GLfloat[gVerticesCube.size() * 3];
+    normalData = new GLfloat[gNormalsCube.size() * 3];
+    indexData = new GLuint[gFacesCube.size() * 3];
+
+    for (int i = 0; i < gVerticesCube.size(); ++i)
+    {
+        vertexData[3 * i] = gVerticesCube[i].x;
+        vertexData[3 * i + 1] = gVerticesCube[i].y;
+        vertexData[3 * i + 2] = gVerticesCube[i].z;
+    }
+
+    for (int i = 0; i < gNormalsCube.size(); ++i)
+    {
+        normalData[3 * i] = gNormalsCube[i].x;
+        normalData[3 * i + 1] = gNormalsCube[i].y;
+        normalData[3 * i + 2] = gNormalsCube[i].z;
+    }
+
+    for (int i = 0; i < gFacesCube.size(); ++i)
+    {
+        indexData[3 * i] = gFacesCube[i].vIndex[0];
+        indexData[3 * i + 1] = gFacesCube[i].vIndex[1];
+        indexData[3 * i + 2] = gFacesCube[i].vIndex[2];
+    }
+
+    glBufferData(GL_ARRAY_BUFFER, gVertexDataSizeInBytes + gNormalDataSizeInBytes, 0, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, gVertexDataSizeInBytes, vertexData);
+    glBufferSubData(GL_ARRAY_BUFFER, gVertexDataSizeInBytes, gNormalDataSizeInBytes, normalData);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSizeInBytes, indexData, GL_STATIC_DRAW);
+
+    // done copying to GPU memory; can free now from CPU memory
+    delete[] vertexData;
+    delete[] normalData;
+    delete[] indexData;
+
+    // ############################# Cube VBO End #############################
 }
 
 void initFonts(int windowWidth, int windowHeight)
@@ -746,14 +916,8 @@ void init()
     initVBO();
 }
 
-void drawModel()
+void drawModel(vector<Face> &gFaces)
 {
-    glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBuffer);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVertexDataSizeInBytes));
-
     glDrawElements(GL_TRIANGLES, gFaces.size() * 3, GL_UNSIGNED_INT, 0);
 }
 
@@ -807,52 +971,188 @@ void renderText(const std::string &text, GLfloat x, GLfloat y, GLfloat scale, gl
 
 void display()
 {
+
+    // ########################## Clear the screen Start ##############################
     glClearColor(0, 0, 0, 1);
     glClearDepth(1.0f);
     glClearStencil(0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-    static float angle = 0;
+    // ########################## Clear the screen End ################################
 
-    glUseProgram(gProgram[0]);
-    // glLoadIdentity();
-    // glTranslatef(-2, 0, -10);
-    // glRotatef(angle, 0, 1, 0);
+    // ############################# Draw the bunny Start #############################
 
-    glm::mat4 T = glm::translate(glm::mat4(1.f), glm::vec3(-2.f, 0.f, -10.f));
-    glm::mat4 R = glm::rotate(glm::mat4(1.f), glm::radians(angle), glm::vec3(0, 1, 0));
-    glm::mat4 modelMat = T * R;
-    glm::mat4 modelMatInv = glm::transpose(glm::inverse(modelMat));
-    glm::mat4 perspMat = glm::perspective(glm::radians(45.0f), 1.f, 1.0f, 100.0f);
+    glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferBunny);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferBunny);
 
-    glUniformMatrix4fv(glGetUniformLocation(gProgram[0], "modelingMat"), 1, GL_FALSE, glm::value_ptr(modelMat));
-    glUniformMatrix4fv(glGetUniformLocation(gProgram[0], "modelingMatInvTr"), 1, GL_FALSE, glm::value_ptr(modelMatInv));
-    glUniformMatrix4fv(glGetUniformLocation(gProgram[0], "perspectiveMat"), 1, GL_FALSE, glm::value_ptr(perspMat));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesBunny.size() * 3 * sizeof(GLfloat)));
 
-    drawModel();
+    glm::mat4 matBunnyScale = glm::scale(glm::mat4(1.0), glm::vec3(0.15, 0.15, 0.15));
 
-    glUseProgram(gProgram[1]);
-    // glLoadIdentity();
-    // glTranslatef(2, 0, -10);
-    // glRotatef(-angle, 0, 1, 0);
+    // Model matrix to make the bunny jump up and down
+    glm::mat4 matT = glm::translate(glm::mat4(1.0), glm::vec3(bunny_horizontal_location, -1.0f, -1.3f));
 
-    T = glm::translate(glm::mat4(1.f), glm::vec3(2.f, 0.f, -10.f));
-    R = glm::rotate(glm::mat4(1.f), glm::radians(-angle), glm::vec3(0, 1, 0));
-    modelMat = T * R;
-    modelMatInv = glm::transpose(glm::inverse(modelMat));
+    // Rotate the bunny aroudd the Y axis 90 degrees
+    glm::mat4 matR = glm::rotate<float>(glm::mat4(1.0), -M_PI / 2., glm::vec3(0.0, 1.0, 0.0));
+    // Translate the bunny up and down
 
-    glUniformMatrix4fv(glGetUniformLocation(gProgram[1], "modelingMat"), 1, GL_FALSE, glm::value_ptr(modelMat));
-    glUniformMatrix4fv(glGetUniformLocation(gProgram[1], "modelingMatInvTr"), 1, GL_FALSE, glm::value_ptr(modelMatInv));
-    glUniformMatrix4fv(glGetUniformLocation(gProgram[1], "perspectiveMat"), 1, GL_FALSE, glm::value_ptr(perspMat));
+    glm::mat4 matCelebrate = glm::rotate<float>(glm::mat4(1.0), bunny_celebrate_angle, glm::vec3(0.0, 1.0, 0.0));
 
-    drawModel();
+    glm::mat4 matDie = glm::rotate<float>(glm::mat4(1.0), bunny_die_angle, glm::vec3(0.0, 0.0, -1.0));
+
+    glm::mat4 matTy = glm::translate(glm::mat4(1.0), glm::vec3(0.f, bunny_vertical_shift, 0.f));
+
+    // modelingMatrixBunny = matTy * matT * matDie * matCelebrate * matR * matBunnyScale;
+
+    modelingMatrixBunny = matTy * matT * matDie * matCelebrate * matR * matBunnyScale;
+
+    // or... (care for the order! first the very bottom one is applied)
+    // modelingMatrix = glm::translate(glm::mat4(1.0), glm::vec3(0.f, 0.f, -3.f));
+    // modelingMatrix = glm::rotate(modelingMatrix, angleRad, glm::vec3(0.0, 0.0, 1.0));
+    // modelingMatrix = glm::rotate<float>(modelingMatrix, (-180. / 180.) * M_PI, glm::vec3(0.0, 1.0, 0.0));
+
+    // Set the active program and the values of its uniform variables
+    glUseProgram(gProgram[bunnyProgram]);
+
+    modelingMatrixLocBunny = glGetUniformLocation(gProgram[bunnyProgram], "modelingMatrix");
+    viewingMatrixLocBunny = glGetUniformLocation(gProgram[bunnyProgram], "viewingMatrix");
+    projectionMatrixLocBunny = glGetUniformLocation(gProgram[bunnyProgram], "projectionMatrix");
+
+    glUniformMatrix4fv(projectionMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(projectionMatrixBunny));
+    glUniformMatrix4fv(viewingMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(viewingMatrixBunny));
+    glUniformMatrix4fv(modelingMatrixLocBunny, 1, GL_FALSE, glm::value_ptr(modelingMatrixBunny));
     assert(glGetError() == GL_NO_ERROR);
 
-    renderText("CENG 477 - 2022", 0, 0, 1, glm::vec3(0, 1, 1));
-
+    // Draw the scene
+    drawModel(gFacesBunny);
     assert(glGetError() == GL_NO_ERROR);
 
-    angle += 0.5;
+    // ############################# Draw the quad Start #############################
+
+    glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferQuad);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferQuad);
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesQuad.size() * 3 * sizeof(GLfloat)));
+
+    glm::mat4 matRQuad = glm::rotate<float>(glm::mat4(1.0), 90, glm::vec3(1.0, 0.0, 0.0));
+    glm::mat4 matS2 = glm::scale(glm::mat4(1.0), glm::vec3(2, 1, 200));
+    glm::mat4 matT2 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -1.0f, -1.0f));
+
+    modelingMatrixQuad = matT2 * matS2 * matRQuad;
+
+    glUseProgram(gProgram[quadProgram]);
+    glUniformMatrix4fv(projectionMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(projectionMatrixQuad));
+    glUniformMatrix4fv(viewingMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(viewingMatrixQuad));
+    glUniformMatrix4fv(modelingMatrixLocQuad, 1, GL_FALSE, glm::value_ptr(modelingMatrixQuad));
+
+    glUniform1f(offsetLoc, offset);
+
+    drawModel(gFacesQuad);
+
+    // ############################# Draw the CUBE 0 Start #############################
+    if (!(is_cube_collided and collison_cube == 0))
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
+
+        glm::mat4 matSC1 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .4, .4));
+        glm::mat4 matTC1 = glm::translate(glm::mat4(1.0), glm::vec3(0.f, -.8f, -16.f + offset));
+        modelingMatrixCube = matTC1 * matSC1;
+
+        glUseProgram(gProgram[cubeProgram]);
+        glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
+        glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
+        glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
+
+        if (yellow_cube == 0)
+        {
+            glUniform3fv(kdLoc, 1, glm::value_ptr(yellow));
+        }
+        else
+        {
+            glUniform3fv(kdLoc, 1, glm::value_ptr(red));
+        }
+
+        drawModel(gFacesCube);
+    }
+
+    // ############################# Draw the CUBE 1 Start #############################
+
+    if (!(is_cube_collided and collison_cube == 1))
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
+
+        glm::mat4 matSC2 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .4, .4));
+        glm::mat4 matTC2 = glm::translate(glm::mat4(1.0), glm::vec3(1.15f, -.8f, -16.0f + offset));
+        modelingMatrixCube = matTC2 * matSC2;
+
+        glUseProgram(gProgram[cubeProgram]);
+        glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
+        glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
+        glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
+
+        if (yellow_cube == 1)
+        {
+            glUniform3fv(kdLoc, 1, glm::value_ptr(yellow));
+        }
+        else
+        {
+            glUniform3fv(kdLoc, 1, glm::value_ptr(red));
+        }
+
+        drawModel(gFacesCube);
+    }
+
+    // ############################# Draw the CUBE 2 Start #############################
+    if (!(is_cube_collided and collison_cube == 2))
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, gVertexAttribBufferCube);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIndexBufferCube);
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(gVerticesCube.size() * 3 * sizeof(GLfloat)));
+
+        glm::mat4 matSC3 = glm::scale(glm::mat4(1.0), glm::vec3(.2, .4, .4));
+        glm::mat4 matTC3 = glm::translate(glm::mat4(1.0), glm::vec3(-1.15f, -.8f, -16.0f + offset));
+        modelingMatrixCube = matTC3 * matSC3;
+
+        glUseProgram(gProgram[cubeProgram]);
+        glUniformMatrix4fv(projectionMatrixLocCube, 1, GL_FALSE, glm::value_ptr(projectionMatrixCube));
+        glUniformMatrix4fv(viewingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(viewingMatrixCube));
+        glUniformMatrix4fv(modelingMatrixLocCube, 1, GL_FALSE, glm::value_ptr(modelingMatrixCube));
+
+        if (yellow_cube == 2)
+        {
+            glUniform3fv(kdLoc, 1, glm::value_ptr(yellow));
+        }
+        else
+        {
+            glUniform3fv(kdLoc, 1, glm::value_ptr(red));
+        }
+
+        drawModel(gFacesCube);
+    }
+
+    // ########################## Draw the Text Start ################################
+
+    renderText("CENG 477 - 2024", 0, gHeight - 50, 1, glm::vec3(0, 1, 1));
+
+    // ########################## Draw the Text End ##################################
 }
 
 void reshape(GLFWwindow *window, int w, int h)
@@ -864,39 +1164,230 @@ void reshape(GLFWwindow *window, int w, int h)
     gHeight = h;
 
     glViewport(0, 0, w, h);
-}
 
+    // Set the projection matrix	// Use perspective projection
+    float fovyRad = (float)(90.0 / 180.0) * M_PI;
+    projectionMatrixBunny = glm::perspective(fovyRad, w / (float)h, 1.0f, 100.0f);
+    projectionMatrixQuad = glm::perspective(fovyRad, w / (float)h, 1.0f, 100.0f);
+    projectionMatrixCube = glm::perspective(fovyRad, w / (float)h, 1.0f, 100.0f);
+
+    viewingMatrixBunny = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0) + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+    viewingMatrixQuad = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0) + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+    viewingMatrixCube = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0) + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+}
 void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    if (key == GLFW_KEY_Q && action == GLFW_PRESS)
     {
-        glfwSetWindowShouldClose(window, GL_TRUE);
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
     else if (key == GLFW_KEY_F && action == GLFW_PRESS)
     {
-        cout << "F pressed" << endl;
-        glUseProgram(gProgram[1]);
+        glShadeModel(GL_FLAT);
     }
-    else if (key == GLFW_KEY_V && action == GLFW_PRESS)
+    else if (key == GLFW_KEY_S && action == GLFW_PRESS)
     {
-        cout << "V pressed" << endl;
-        glUseProgram(gProgram[0]);
+        glShadeModel(GL_SMOOTH);
+    }
+    else if (key == GLFW_KEY_W && action == GLFW_PRESS)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
+    else if (key == GLFW_KEY_E && action == GLFW_PRESS)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
+    else if (key == GLFW_KEY_A && action == GLFW_PRESS)
+    {
+
+        if (bunny_horizontal_location > -1)
+        {
+            bunny_shift_buffer -= .5;
+        }
     }
     else if (key == GLFW_KEY_D && action == GLFW_PRESS)
     {
-        cout << "D pressed" << endl;
-        gIntensity /= 1.5;
-        cout << "gIntensity = " << gIntensity << endl;
-        glUseProgram(gProgram[0]);
-        glUniform1f(gIntensityLoc, gIntensity);
+        if (bunny_horizontal_location < 1)
+        {
+            bunny_shift_buffer += .5;
+        }
     }
-    else if (key == GLFW_KEY_B && action == GLFW_PRESS)
+    else if (key == GLFW_KEY_R)
     {
-        cout << "B pressed" << endl;
-        gIntensity *= 1.5;
-        cout << "gIntensity = " << gIntensity << endl;
-        glUseProgram(gProgram[0]);
-        glUniform1f(gIntensityLoc, gIntensity);
+        end_game = false;
+        score = 0;
+        speed = 1;
+        bunny_horizontal_location = 0;
+        bunny_vertical_shift = 0;
+        bunny_shift_buffer = 0;
+        offset = 0;
+        is_cube_collided = false;
+        collison_cube = -1;
+        yellow_cube = rand() % 3;
+        isBunnyGoingUp = true;
+        bunny_celebrate_angle = 0;
+        should_celebrate = false;
+        should_die = false;
+        bunny_die_angle = 0;
+    }
+}
+void gameLogic()
+{
+    speed += 0.002;
+
+    bunny_move_vertical_value = .007 * speed + .01;
+    if (isBunnyGoingUp)
+    {
+        if (bunny_vertical_shift >= .25)
+        {
+            isBunnyGoingUp = false;
+        }
+        bunny_vertical_shift += bunny_move_vertical_value;
+    }
+    else
+    {
+        if (bunny_vertical_shift <= 0)
+        {
+            isBunnyGoingUp = true;
+        }
+        bunny_vertical_shift -= bunny_move_vertical_value;
+    }
+
+    float offset_increment_value = .03 * speed + .05;
+    offset += offset_increment_value;
+
+    score += long(offset_increment_value * 10 + 1); // Increase score based on distance covered
+
+    if (offset >= 16)
+    {
+        offset = 0;
+        yellow_cube = rand() % 3;
+        is_cube_collided = false;
+    }
+
+    if (offset >= 14 && !is_cube_collided)
+    {
+        // Check of collision
+        if (bunny_horizontal_location <= -0.75)
+        // Dont render this cube anymore
+        {
+            is_cube_collided = true;
+            collison_cube = 2;
+
+            if (yellow_cube == 2)
+            {
+                std::cout << "Increase Score" << std::endl;
+                score += 1000;
+                should_celebrate = true;
+            }
+            else
+            {
+                std::cout << "End Game" << std::endl;
+                should_die = true;
+            }
+        }
+        else if (bunny_horizontal_location >= -0.4 && bunny_horizontal_location <= 0.4)
+        {
+
+            is_cube_collided = true;
+            collison_cube = 0;
+
+            if (yellow_cube == 0)
+            {
+                std::cout << "Increase Score" << std::endl;
+                score += 1000;
+                should_celebrate = true;
+            }
+            else
+            {
+                std::cout << "End Game" << std::endl;
+                should_die = true;
+            }
+        }
+        else if (bunny_horizontal_location >= 0.75)
+        {
+            is_cube_collided = true;
+            collison_cube = 1;
+
+            if (yellow_cube == 1)
+            {
+                std::cout << "Increase Score" << std::endl;
+                score += 1000;
+                should_celebrate = true;
+            }
+            else
+            {
+                std::cout << "End Game" << std::endl;
+                should_die = true;
+            }
+        }
+    }
+
+    float bunny_shift_value = .007 * speed + .01;
+    // bunny_horizontal_location += bunny_shift_value;
+    if (bunny_horizontal_location > 1)
+    {
+        bunny_horizontal_location = 1;
+        if (bunny_shift_buffer > 0)
+        {
+            bunny_shift_buffer = 0;
+        }
+    }
+    else if (bunny_horizontal_location < -1)
+    {
+
+        bunny_horizontal_location = -1;
+        if (bunny_shift_buffer < 0)
+        {
+            bunny_shift_buffer = 0;
+        }
+    }
+    else
+    {
+        if (bunny_shift_buffer > 0)
+        {
+            bunny_shift_buffer -= bunny_shift_value;
+            bunny_horizontal_location += bunny_shift_value;
+            if (bunny_shift_buffer < 0)
+            {
+                bunny_shift_buffer = 0;
+            }
+        }
+        else if (bunny_shift_buffer < 0)
+        {
+            bunny_shift_buffer += bunny_shift_value;
+            bunny_horizontal_location -= bunny_shift_value;
+            if (bunny_shift_buffer > 0)
+            {
+                bunny_shift_buffer = 0;
+            }
+        }
+    }
+
+    if (should_celebrate)
+    {
+        if (bunny_celebrate_angle < 2 * M_PI)
+        {
+            bunny_celebrate_angle += 0.05 * speed + .05;
+        }
+        else
+        {
+            should_celebrate = false;
+            bunny_celebrate_angle = 0;
+        }
+    }
+
+    if (should_die)
+    {
+        if (bunny_die_angle < M_PI / 2)
+        {
+            bunny_die_angle += 0.05 * speed + .05;
+        }
+        else
+        {
+            should_die = false;
+            end_game = true;
+        }
     }
 }
 
@@ -904,7 +1395,11 @@ void mainLoop(GLFWwindow *window)
 {
     while (!glfwWindowShouldClose(window))
     {
-        display();
+        if (!end_game)
+        {
+            gameLogic();
+            display();
+        }
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
