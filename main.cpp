@@ -87,6 +87,7 @@ float bunny_celebrate_angle = 0;
 bool end_game = false;
 bool should_die = false;
 float bunny_die_angle = 0;
+glm::vec3 score_color = glm::vec3(1.0, 1.0, 0.0);
 
 // ############################# Game logic Global Variables End ###############################
 
@@ -1149,8 +1150,14 @@ void display()
     }
 
     // ########################## Draw the Text Start ################################
-
-    renderText("CENG 477 - 2024", 0, gHeight - 50, 1, glm::vec3(0, 1, 1));
+	
+	// Convert score to string	and render it
+	std::string score_string = std::to_string(score);
+	std::string string = "Score: " + score_string;
+	renderText(string, 0, gHeight - 50, 1, score_color);
+	//
+	// renderText(score_string, 0, gHeight - 50, 1, glm::vec3(0, 1, 1));
+    // renderText("CENG 477 - 2024", 0, gHeight - 50, 1, glm::vec3(0, 1, 1));
 
     // ########################## Draw the Text End ##################################
 }
@@ -1214,6 +1221,7 @@ void keyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
     }
     else if (key == GLFW_KEY_R)
     {
+		score_color = glm::vec3(1, 1, 0);
         end_game = false;
         score = 0;
         speed = 5;
@@ -1284,6 +1292,7 @@ void gameLogic()
             {
                 std::cout << "End Game" << std::endl;
                 should_die = true;
+				score_color = glm::vec3(1, 0, 0);
             }
         }
         else if (bunny_horizontal_location >= -0.4 && bunny_horizontal_location <= 0.4)
@@ -1302,6 +1311,7 @@ void gameLogic()
             {
                 std::cout << "End Game" << std::endl;
                 should_die = true;
+				score_color = glm::vec3(1, 0, 0);
             }
         }
         else if (bunny_horizontal_location >= 0.75)
@@ -1319,6 +1329,7 @@ void gameLogic()
             {
                 std::cout << "End Game" << std::endl;
                 should_die = true;
+				score_color = glm::vec3(1, 0, 0);
             }
         }
     }
